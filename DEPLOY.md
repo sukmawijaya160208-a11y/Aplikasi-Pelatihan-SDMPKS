@@ -271,3 +271,29 @@ docker exec sdmpks-nginx nginx -s reload   # (statis, tak perlu, tapi aman)
 ```cron
 0 2 * * * docker exec sdmpks-db mariadb-dump -uroot -pSdmpksRoot#2026! sdmpks_db > /var/backups/sdmpks-$(date +\%F).sql && find /var/backups -name 'sdmpks-*.sql' -mtime +7 -delete
 ```
+
+### Auto-Deploy (aktif sejak 5 Agt 2026)
+
+Alur: `git push` ? cron VPS (tiap 2 menit) mendeteksi commit baru ? pull ? lint ? migrasi ? health check ? **rollback otomatis** bila gagal. Bisa dilihat di `/var/www/sdmpks/deploy/update.log`.
+
+| Cron | File | Fungsi |
+|---|---|---|
+| `*/2 * * * *` | `deploy/update.sh` | Auto-deploy + rollback (flock anti-bentrok) |
+| `*/5 * * * *` | `deploy/guard-nginx.sh` | Hidupkan container mati, sambungkan network KUD, pulihkan blok nginx SDMPKS bila project KUD menimpanya |
+| `0 2 * * *` | `deploy/backup-db.sh` | Dump DB ke `/var/backups/sdmpks-*.sql`, simpan 7 hari |
+| `@reboot` | `deploy/harden-net.sh` | Pastikan 8080 hanya localhost |
+
+Kredensial DB container ada di `deploy/.env` (chmod 600). Update manual: `cd /var/www/sdmpks/app && git pull` (aman ? update.sh yang menangani lint/migrasi/reload).
+
+### Migrasi DB (konvensi)
+
+- File baru: `sql/migrations/00XX_keterangan.sql` (non-destruktif, idempotent).
+- Otomatis diaplikasi SEKALI oleh update.sh (marker di `deploy/migrated/`).
+- `sql/schema.sql` berisi DROP TABLE ? HANYA untuk instalasi baru, tidak pernah auto-run.
+
+### Keamanan & catatan penting
+
+- Port `8080` hanya `127.0.0.1` (publish bind di `docker-compose.yml`); akses publik hanya lewat `https://aplikasisdmpksa.online`.
+- `sdmpks-nginx` menumpang `kud_kud-network` (external) ? jangan hapus network ini.
+- Jika project KUD `git pull` menimpa `kud-nginx.conf`, guard memulihkan otomatis ?5 menit.
+- Uji sebelum push (laptop): jalankan 4 suite test, wajib `TOTAL-FAIL = 0` (lihat `run-tests.cmd` + pre-push hook lint).
