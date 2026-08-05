@@ -32,13 +32,37 @@ mysql --version
 
 ## 3. Ambil Kode dari GitHub
 
+### 3a. (Rekomendasi) Deploy Key SSH khusus VPS
+
+Buat keypair di VPS (sekali saja):
+
 ```bash
-sudo mkdir -p /var/www
+mkdir -p /root/.ssh
+ssh-keygen -t ed25519 -f /root/.ssh/id_sdmpks -N ""
+cat /root/.ssh/id_sdmpks.pub
+```
+
+Salin hasilnya, lalu di GitHub repo ini: **Settings → Deploy keys → Add deploy key** → tempel public key → title `VPS sdmpks` → **jangan centang** "Allow write access" (read-only cukup untuk auto-deploy).
+
+> Catatan: satu deploy key hanya bisa dipakai satu repository. VPS project 1 punya key sendiri; project ini pakai key sendiri (`id_sdmpks`). Public key yang sama tidak bisa dipakai di dua repo.
+
+```bash
+cd /var/www
+sudo git clone git@github.com:sukmawijaya160208-a11y/Aplikasi-Pelatihan-SDMPKS.git sdmpks
+cd sdmpks
+sudo cp api/config.example.php api/config.php
+```
+
+### 3b. Alternatif: clone via HTTPS
+
+```bash
 cd /var/www
 sudo git clone https://github.com/sukmawijaya160208-a11y/Aplikasi-Pelatihan-SDMPKS.git sdmpks
 cd sdmpks
 sudo cp api/config.example.php api/config.php
 ```
+
+> Update aplikasi di bagian 9 menggunakan remote yang sama (SSH atau HTTPS).
 
 ## 4. Buat Database & User MySQL
 
