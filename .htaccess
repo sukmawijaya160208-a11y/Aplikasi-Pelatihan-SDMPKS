@@ -1,0 +1,15 @@
+# ============================================================
+# SDMPKS - Caching & keamanan dasar
+# Aset statis di-cache 7 hari (versi ?v= mengendalikan invalidasi);
+# halaman HTML & API tetap tanpa cache agar data selalu segar.
+# ============================================================
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|png|jpg|jpeg|gif|svg|ico|woff2?)$">
+    Header set Cache-Control "public, max-age=604800, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(html|php)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+Options -Indexes

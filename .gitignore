@@ -1,0 +1,29 @@
+# ============================================================
+# SDMPKS - Berkas yang TIDAK boleh masuk repository
+# ============================================================
+
+# Konfigurasi database lokal (berisi kredensial)
+# Salin api/config.example.php -> api/config.php lalu isi sesuai lingkungan
+api/config.php
+
+# Backup database hasil fitur Backup & Restore (berisi data produksi)
+backups/*.sql
+!backups/.htaccess
+
+# Dokumen unggahan pengguna (PDF berkas pekebun)
+uploads/pekebun/
+!uploads/pekebun/.htaccess
+
+# Data pribadi (bukti donasi) - tidak dipublikasikan
+assets/img/bukti-donasi.png
+
+# Sampah OS / editor
+Thumbs.db
+Desktop.ini
+*.log
+.vscode/
+.idea/
+node_modules/
+
+# Artefak uji otomatis
+*.cjs.dbg

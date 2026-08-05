@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Dashboard - Aplikasi Pelatihan SDMPKS</title>
+<link rel="stylesheet" href="css/style.css?v=74">
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <div class="brand-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+    </div>
+    <div class="brand-text">
+      <strong>SDMPKS</strong>
+      <span>Versi. 1.0</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav" id="sidebarNav"></nav>
+
+  <div class="sidebar-foot">
+    <button class="btn-logout" id="btnLogout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Keluar
+    </button>
+  </div>
+</aside>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<main class="main">
+  <header class="topbar">
+    <button class="hamburger" id="btnMenu" aria-label="Buka menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div>
+      <h2 id="pageTitle">Dashboard</h2>
+      <p id="pageSubtitle">Ringkasan keseluruhan data kelembagaan</p>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-date" id="topbarDate"></span>
+      <div class="notif-wrap" id="notifWrap">
+        <button class="notif-bell" id="btnNotif" aria-label="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-badge" id="notifBadge" hidden>0</span>
+        </button>
+        <div class="notif-panel" id="notifPanel" hidden>
+          <div class="notif-head">
+            <strong>Notifikasi</strong>
+            <button type="button" class="btn btn-xs btn-ghost" id="btnNotifSemua">Tandai Semua Dibaca</button>
+          </div>
+          <div class="notif-list" id="notifList"><div class="notif-empty">Memuat...</div></div>
+        </div>
+      </div>
+      <div class="profile-menu" id="profileMenu">
+        <button class="user-chip" id="btnProfile" aria-label="Menu profil">
+          <span class="avatar" id="avatarInit">A</span>
+          <span class="pm-txt">
+            <strong id="pmName">Admin</strong>
+            <small id="pmRole">Administrator</small>
+          </span>
+          <svg class="pm-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="pm-dropdown" id="pmDropdown" hidden>
+          <div class="pm-head">
+            <strong id="pmName2">Admin</strong>
+            <span id="pmUser2">admin</span>
+          </div>
+          <button type="button" class="pm-item" data-act="password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Ganti Password
+          </button>
+          <button type="button" class="pm-item danger" data-act="logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Keluar
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ============ DASHBOARD ============ -->
+    <section class="page active" id="page-dashboard">
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-head"><h3>Komposisi Jenis Kelamin</h3></div>
+          <div class="chart-box"><canvas id="chartJK"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Pekebun per Bulan (6 Bulan Terakhir)</h3></div>
+          <div class="chart-box"><canvas id="chartBulan"></canvas></div>
+        </div>
+      </div>
+      <div class="card" id="recentCard">
+        <div class="card-head card-head-toolbar">
+          <h3 id="recentTitle">Data Pekebun Terbaru</h3>
+          <a href="#" class="link" data-go="data">Lihat semua &rarr;</a>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead id="recentHead"><tr><th>No</th><th>Nama</th><th>NIK</th><th>Jenis Kelamin</th><th>Alamat</th><th>No. HP</th></tr></thead>
+            <tbody id="tbodyRecent"><tr class="empty-row"><td colspan="6">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ INPUT DATA ============ -->
+    <section class="page" id="page-data">
+      <div class="grid-2 page-data-grid">
+        <div class="card" id="cardUpload">
+          <div class="card-head"><h3>Upload Data Excel</h3></div>
+          <div class="dropzone" id="dropzone">
+            <div class="dz-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <p>Tarik &amp; letakkan file Excel di sini</p>
+            <span>atau</span>
+            <button type="button" class="btn btn-outline" id="btnPilihFile">Pilih File Excel</button>
+            <input type="file" id="fileExcel" accept=".xlsx,.xls" hidden>
+            <p class="dz-hint">Kolom wajib (tanda * di template): Nama Lengkap, NIK, Nomor Kartu Keluarga, Jenis Kelamin, Jenis Pelatihan, Jalur, Provinsi, Kabupaten/Kota, Kecamatan, Desa/Kelurahan, Nama Kepala Desa &bull; Kolom lain boleh kosong &bull; Unduh template untuk contoh</p>
+          </div>
+          <div class="form-actions" style="margin-top:14px;">
+            <button type="button" class="btn btn-green" id="btnTemplate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Unduh Template Excel
+            </button>
+          </div>
+        </div>
+        <div class="card" id="cardForm">
+          <div class="card-head"><h3 id="formTitle">Input Data Pekebun</h3></div>
+          <form id="formPekebun" novalidate>
+            <input type="hidden" id="fId">
+            <div class="form-group" id="formLembagaWrap" hidden>
+              <label for="fLembaga">Kelembagaan *</label>
+              <select id="fLembaga">
+                <option value="">-- Pilih Kelembagaan --</option>
+              </select>
+            </div>
+            <div class="form-sec">
+              <div class="form-sec-title">Identitas</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fNama">Nama Lengkap *</label>
+                  <input type="text" id="fNama" placeholder="Nama lengkap pekebun" required>
+                </div>
+                <div class="form-group">
+                  <label for="fNik">NIK *</label>
+                  <input type="text" id="fNik" placeholder="16 digit NIK" maxlength="16" inputmode="numeric" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fNoKk">Nomor Kartu Keluarga</label>
+                  <input type="text" id="fNoKk" placeholder="16 digit No. KK" maxlength="16" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                  <label for="fJk">Jenis Kelamin *</label>
+                  <select id="fJk" required>
+                    <option value="">-- Pilih Jenis Kelamin --</option>
+                    <option>LAKI-LAKI</option>
+                    <option>PEREMPUAN</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fTempatLahir">Tempat Lahir</label>
+                  <input type="text" id="fTempatLahir" placeholder="cth: Megang Sakti">
+                </div>
+                <div class="form-group">
+                  <label for="fTanggalLahir">Tanggal Lahir</label>
+                  <input type="date" id="fTanggalLahir">
+                </div>
+              </div>
+            </div>
+            <div class="form-sec">
+              <div class="form-sec-title">Keikutsertaan Pelatihan</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fJenisPelatihan">Jenis Pelatihan *</label>
+                  <select id="fJenisPelatihan" required>
+                    <option value="">-- Pilih Jenis Pelatihan --</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="fJalur">Jalur *</label>
+                  <select id="fJalur" required>
+                    <option value="">-- Pilih Jalur --</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="form-sec">
+              <div class="form-sec-title">Alamat Wilayah</div>
+              <div class="form-grid-4">
+                <div class="form-group">
+                  <label for="fProvinsi">Provinsi *</label>
+                  <select id="fProvinsi" required>
+                    <option value="">-- Pilih Provinsi --</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="fKabupaten">Kabupaten/Kota *</label>
+                  <select id="fKabupaten" required disabled>
+                    <option value="">-- Pilih Kabupaten --</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="fKecamatan">Kecamatan *</label>
+                  <select id="fKecamatan" required disabled>
+                    <option value="">-- Pilih Kecamatan --</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="fDesa">Desa/Kelurahan *</label>
+                  <select id="fDesa" required disabled>
+                    <option value="">-- Pilih Desa --</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fNoShm">No. Sertifikat Hak Milik (SHM)</label>
+                  <input type="text" id="fNoShm" placeholder="cth: SHM.01.05.03.03112">
+                </div>
+                <div class="form-group">
+                  <label for="fLuasLahan">Luas Lahan (M2)</label>
+                  <input type="text" id="fLuasLahan" placeholder="cth: 1500 atau 1500,5" inputmode="decimal">
+                </div>
+              </div>
+              <div class="form-group">
+                  <label for="fKepalaDesa">Nama Kepala Desa</label>
+                  <input type="text" id="fKepalaDesa" placeholder="cth: SISWOYO">
+                </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fPemilikSebelumnya">Nama Pemilik Sebelumnya</label>
+                  <input type="text" id="fPemilikSebelumnya" placeholder="cth: Nama pemilik lama">
+                </div>
+                <div class="form-group">
+                  <label for="fHp">Nomor Handphone *</label>
+                  <input type="text" id="fHp" placeholder="08xxxxxxxxxx" inputmode="tel" required>
+                </div>
+              </div>
+              <div class="detail-section" id="formTanahWrap">
+                <h4>Data Tanah &amp; Pernyataan</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="fAgama">Agama</label>
+                    <select id="fAgama">
+                      <option value="">Pilih Agama</option>
+                      <option>Islam</option>
+                      <option>Buddha</option>
+                      <option>Hindu</option>
+                      <option>Katolik</option>
+                      <option>Konghucu</option>
+                      <option>Kristen</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="fPekerjaan">Pekerjaan</label>
+                    <select id="fPekerjaan">
+                      <option value="">Pilih Pekerjaan</option>
+                      <option>Belum/Tidak Bekerja</option>
+                      <option>Petani/Pekebun</option>
+                      <option>Peternak</option>
+                      <option>Nelayan</option>
+                      <option>Buruh Tani/Nelayan</option>
+                      <option>Supir</option>
+                      <option>Mengurus Rumah Tangga</option>
+                      <option>Pelajar/Mahasiswa</option>
+                      <option>Pensiunan</option>
+                      <option>ASN (PNS)</option>
+                      <option>TNI</option>
+                      <option>POLRI</option>
+                      <option>Presiden</option>
+                      <option>Anggota DPR/DPRD</option>
+                      <option>Kepala Daerah</option>
+                      <option>Perangkat Desa</option>
+                      <option>Karyawan Swasta</option>
+                      <option>Karyawan BUMN/BUMD</option>
+                      <option>Karyawan Honorer</option>
+                      <option>Wiraswasta</option>
+                      <option>Pedagang</option>
+                      <option>Dokter</option>
+                      <option>Perawat</option>
+                      <option>Bidan</option>
+                      <option>Guru</option>
+                      <option>Dosen</option>
+                      <option>Pengacara</option>
+                      <option>Notaris</option>
+                      <option>Akuntan</option>
+                      <option>Arsitek</option>
+                      <option>Wartawan</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="fJalanRtRw">Jalan, RT/RW</label>
+                    <input type="text" id="fJalanRtRw" placeholder="cth: Jl. Merdeka RT 01 RW 02">
+                  </div>
+                  <div class="form-group">
+                    <label for="fNib">NIB</label>
+                    <input type="text" id="fNib" placeholder="cth: Nomor Identifikasi Bidang">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="fStatusTanah">Status Tanah</label>
+                    <input type="text" id="fStatusTanah" placeholder="cth: Bekas Milik Adat">
+                  </div>
+                  <div class="form-group">
+                    <label for="fDipergunakan">Dipergunakan Untuk</label>
+                    <select id="fDipergunakan">
+                      <option value="">Pilih Peruntukan</option>
+                      <option>Kebun Kelapa Sawit</option>
+                      <option>Kebun Karet</option>
+                      <option>Kebun Kopi</option>
+                      <option>Kebun Kakao</option>
+                      <option>Kebun Kelapa</option>
+                      <option>Kebun Teh</option>
+                      <option>Kebun Cengkeh</option>
+                      <option>Kebun Lada</option>
+                      <option>Kebun Pala</option>
+                      <option>Kebun Tebu</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="fBatasUtara">Sebelah Utara</label>
+                    <input type="text" id="fBatasUtara" placeholder="cth: Jalan / Sungai / Tanah ...">
+                  </div>
+                  <div class="form-group">
+                    <label for="fBatasTimur">Sebelah Timur</label>
+                    <input type="text" id="fBatasTimur" placeholder="cth: Tanah ...">
+                  </div>
+                  <div class="form-group">
+                    <label for="fBatasSelatan">Sebelah Selatan</label>
+                    <input type="text" id="fBatasSelatan" placeholder="cth: Tanah ...">
+                  </div>
+                  <div class="form-group">
+                    <label for="fBatasBarat">Sebelah Barat</label>
+                    <input type="text" id="fBatasBarat" placeholder="cth: Tanah ...">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="fTahunKuasai">Tahun Dikuasai</label>
+                    <input type="text" id="fTahunKuasai" placeholder="cth: 1998" inputmode="numeric">
+                  </div>
+                  <div class="form-group">
+                    <label for="fPerolehanDari">Diperoleh Dari</label>
+                    <input type="text" id="fPerolehanDari" placeholder="cth: Warisan / Pembelian dari ...">
+                  </div>
+                  <div class="form-group">
+                    <label for="fPerolehanSejak">Sejak Tahun</label>
+                    <input type="text" id="fPerolehanSejak" placeholder="cth: 1998" inputmode="numeric">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="fSaksi1Nama">Saksi 1 - Nama</label>
+                    <input type="text" id="fSaksi1Nama" placeholder="cth: Nama saksi 1">
+                  </div>
+                  <div class="form-group">
+                    <label for="fSaksi1Umur">Saksi 1 - Umur</label>
+                    <input type="text" id="fSaksi1Umur" placeholder="cth: 45" inputmode="numeric">
+                  </div>
+                  <div class="form-group">
+                    <label for="fSaksi1Pekerjaan">Saksi 1 - Pekerjaan</label>
+                    <select id="fSaksi1Pekerjaan">
+                      <option value="">Pilih Pekerjaan</option>
+                      <option>Belum/Tidak Bekerja</option>
+                      <option>Petani/Pekebun</option>
+                      <option>Peternak</option>
+                      <option>Nelayan</option>
+                      <option>Buruh Tani/Nelayan</option>
+                      <option>Supir</option>
+                      <option>Mengurus Rumah Tangga</option>
+                      <option>Pelajar/Mahasiswa</option>
+                      <option>Pensiunan</option>
+                      <option>ASN (PNS)</option>
+                      <option>TNI</option>
+                      <option>POLRI</option>
+                      <option>Presiden</option>
+                      <option>Anggota DPR/DPRD</option>
+                      <option>Kepala Daerah</option>
+                      <option>Perangkat Desa</option>
+                      <option>Karyawan Swasta</option>
+                      <option>Karyawan BUMN/BUMD</option>
+                      <option>Karyawan Honorer</option>
+                      <option>Wiraswasta</option>
+                      <option>Pedagang</option>
+                      <option>Dokter</option>
+                      <option>Perawat</option>
+                      <option>Bidan</option>
+                      <option>Guru</option>
+                      <option>Dosen</option>
+                      <option>Pengacara</option>
+                      <option>Notaris</option>
+                      <option>Akuntan</option>
+                      <option>Arsitek</option>
+                      <option>Wartawan</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="fSaksi1Alamat">Saksi 1 - Alamat</label>
+                  <input type="text" id="fSaksi1Alamat" placeholder="cth: Dusun ... Desa ...">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="fSaksi2Nama">Saksi 2 - Nama</label>
+                    <input type="text" id="fSaksi2Nama" placeholder="cth: Nama saksi 2">
+                  </div>
+                  <div class="form-group">
+                    <label for="fSaksi2Umur">Saksi 2 - Umur</label>
+                    <input type="text" id="fSaksi2Umur" placeholder="cth: 50" inputmode="numeric">
+                  </div>
+                  <div class="form-group">
+                    <label for="fSaksi2Pekerjaan">Saksi 2 - Pekerjaan</label>
+                    <select id="fSaksi2Pekerjaan">
+                      <option value="">Pilih Pekerjaan</option>
+                      <option>Belum/Tidak Bekerja</option>
+                      <option>Petani/Pekebun</option>
+                      <option>Peternak</option>
+                      <option>Nelayan</option>
+                      <option>Buruh Tani/Nelayan</option>
+                      <option>Supir</option>
+                      <option>Mengurus Rumah Tangga</option>
+                      <option>Pelajar/Mahasiswa</option>
+                      <option>Pensiunan</option>
+                      <option>ASN (PNS)</option>
+                      <option>TNI</option>
+                      <option>POLRI</option>
+                      <option>Presiden</option>
+                      <option>Anggota DPR/DPRD</option>
+                      <option>Kepala Daerah</option>
+                      <option>Perangkat Desa</option>
+                      <option>Karyawan Swasta</option>
+                      <option>Karyawan BUMN/BUMD</option>
+                      <option>Karyawan Honorer</option>
+                      <option>Wiraswasta</option>
+                      <option>Pedagang</option>
+                      <option>Dokter</option>
+                      <option>Perawat</option>
+                      <option>Bidan</option>
+                      <option>Guru</option>
+                      <option>Dosen</option>
+                      <option>Pengacara</option>
+                      <option>Notaris</option>
+                      <option>Akuntan</option>
+                      <option>Arsitek</option>
+                      <option>Wartawan</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="fSaksi2Alamat">Saksi 2 - Alamat</label>
+                  <input type="text" id="fSaksi2Alamat" placeholder="cth: Dusun ... Desa ...">
+                </div>
+              </div>
+            </div>
+            <div class="detail-section" id="formDokumenWrap" hidden>
+              <h4>Dokumen Pendukung (PDF, maks. 5 MB)</h4>
+              <p class="muted" id="formDokumenHint">Dokumen otomatis terlihat oleh Dinas Perkebunan (admin kabupaten) saat usulan diajukan.</p>
+              <div class="doc-upload" id="formDocDropzone">
+                <input type="file" id="formFileDokumen" accept="application/pdf" hidden>
+                <button type="button" class="btn btn-outline" id="btnPilihFormDokumen">Pilih File PDF</button>
+                <span class="doc-upload-hint">atau seret &amp; letakkan di sini &bull; PDF maks. 5 MB</span>
+              </div>
+              <div class="doc-list" id="formDocList"></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="btnSimpan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Simpan Data
+              </button>
+              <button type="button" class="btn btn-ghost" id="btnBatal" hidden>Batal</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head card-head-toolbar">
+          <h3>Data Pekebun <span class="badge" id="countData">0</span></h3>
+          <div class="toolbar">
+            <input type="search" id="searchData" placeholder="Cari nama / NIK...">
+            <select id="filterJk">
+              <option value="">Semua Jenis Kelamin</option>
+              <option>LAKI-LAKI</option>
+              <option>PEREMPUAN</option>
+            </select>
+            <select id="filterLembaga" hidden>
+              <option value="">Semua Kelembagaan</option>
+            </select>
+            <button class="btn btn-outline" id="btnCetakData">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Cetak
+            </button>
+            <button class="btn btn-outline" id="btnPdfData">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Unduh PDF
+            </button>
+            <button class="btn btn-outline" id="btnExcelData">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Unduh Excel
+            </button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>No</th><th>Nama</th><th>NIK</th><th>Jenis Kelamin</th><th>Alamat</th><th>No. HP</th><th>Status</th><th>Tanggal Input</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="tbodyData"><tr class="empty-row"><td colspan="9">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SURAT-SURAT ============ -->
+    <section class="page" id="page-surat">
+      <div class="card">
+        <div class="card-head"><h3>Buat Surat</h3></div>
+        <div class="surat-controls">
+          <div class="form-group" id="suratLembagaWrap" hidden>
+            <label for="selLembagaSurat">Kelembagaan</label>
+            <select id="selLembagaSurat"></select>
+          </div>
+          <div class="form-group" id="selPekebunWrap">
+            <label for="selPekebun">Pilih Pekebun</label>
+            <select id="selPekebun">
+              <option value="">-- Pilih Pekebun --</option>
+            </select>
+          </div>
+          <div class="form-group" id="pekebunMultiWrap" hidden>
+            <label>Pilih Pekebun (bisa lebih dari satu)</label>
+            <div class="multi-tools">
+              <button type="button" class="btn btn-sm" id="btnMultiAll">Pilih Semua</button>
+              <button type="button" class="btn btn-sm" id="btnMultiNone">Bersihkan</button>
+            </div>
+            <div class="multi-box" id="pekebunMultiList"></div>
+          </div>
+          <div class="form-group">
+            <label for="selJenis">Jenis Surat</label>
+            <select id="selJenis">
+              <option value="koperasi">Surat Keterangan Keanggotaan Koperasi</option>
+              <option value="pelatihan">Surat Pernyataan Bersedia Mengikuti Kegiatan Pelatihan</option>
+              <option value="lahan">Surat Pernyataan Kepemilikan Lahan</option>
+              <option value="beda_nama">Surat Keterangan Beda Nama</option>
+              <option value="fisik">Surat Pernyataan Penguasaan Fisik Bidang Tanah</option>
+            </select>
+          </div>
+          <div class="form-group" id="tanamanWrap">
+            <label for="selTanaman">Jenis Tanaman</label>
+            <select id="selTanaman">
+              <option value="kelapa sawit">Kelapa Sawit</option>
+              <option value="kelapa">Kelapa</option>
+              <option value="kakao">Kakao</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="inpTanggal">Tanggal Surat</label>
+            <input type="date" id="inpTanggal">
+          </div>
+          <div class="form-group">
+            <label for="inpNoSurat">Nomor Surat (otomatis)</label>
+            <input type="text" id="inpNoSurat" readonly>
+          </div>
+          <button class="btn btn-primary" id="btnBuatSurat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Buat Surat
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head card-head-toolbar">
+          <h3>Pratinjau Surat</h3>
+          <div class="toolbar">
+            <button class="btn btn-ghost" id="btnSimpanArsip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Simpan ke Arsip
+            </button>
+            <button class="btn btn-outline" id="btnCetakSurat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Cetak
+            </button>
+            <button class="btn btn-green" id="btnPdfSurat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Unduh PDF
+            </button>
+          </div>
+        </div>
+        <div class="sheet-preview" id="suratPreview">
+          <div class="empty-state">Pilih pekebun dan jenis surat, lalu klik &quot;Buat Surat&quot;.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CETAK / ARSIP ============ -->
+    <section class="page" id="page-cetak">
+      <div class="card">
+        <div class="card-head card-head-toolbar">
+          <h3>Arsip Surat <span class="badge" id="countArsip">0</span></h3>
+          <div class="toolbar">
+            <input type="search" id="searchArsip" placeholder="Cari nomor surat / nama...">
+            <select id="filterJenis">
+              <option value="">Semua Jenis Surat</option>
+              <option value="koperasi">Keanggotaan Koperasi</option>
+              <option value="pelatihan">Bersedia Mengikuti Pelatihan</option>
+              <option value="lahan">Kepemilikan Lahan</option>
+              <option value="beda_nama">Beda Nama</option>
+              <option value="fisik">Penguasaan Fisik Tanah</option>
+            </select>
+            <select id="filterLembagaArsip" hidden>
+              <option value="">Semua Kelembagaan</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>No</th><th>Nomor Surat</th><th>Jenis Surat</th><th>Nama Pekebun</th><th>Tanggal Surat</th><th>Dibuat Pada</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="tbodyArsip"><tr class="empty-row"><td colspan="7">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PENGAJUAN (lembaga) ============ -->
+    <section class="page" id="page-pengajuan">
+      <div class="alert-banner" id="usulanBatasBanner" hidden></div>
+      <div class="card">
+        <div class="card-head card-head-toolbar">
+          <h3>Pengajuan Berkas <span class="badge" id="countPengajuan">0</span></h3>
+          <div class="toolbar">
+            <button class="btn btn-outline" id="btnCetakPengajuan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Cetak Data Pekebun
+            </button>
+            <button class="btn btn-outline" id="btnExcelPengajuan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Unduh Excel
+            </button>
+            <button class="btn btn-outline" id="btnPdfPengajuan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Unduh PDF
+            </button>
+            <select id="filterPengajuan">
+              <option value="">Semua Status</option>
+              <option value="draft">Draft</option>
+              <option value="diajukan">Menunggu Verifikasi</option>
+              <option value="disetujui">Disetujui</option>
+              <option value="dikembalikan">Dikembalikan</option>
+            </select>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:0;">Data yang diajukan akan diverifikasi oleh Dinas Perkebunan. Berkas yang dikembalikan dapat diperbaiki lalu diajukan ulang.</p>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>No</th><th>Nama</th><th>NIK</th><th>Desa</th><th>Status</th><th>Diajukan Pada</th><th>Keterangan</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="tbodyPengajuan"><tr class="empty-row"><td colspan="8">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ USULAN (dinas / admin) ============ -->
+    <section class="page" id="page-usulan">
+      <div class="us-summary" id="usSummary"></div>
+      <div class="card">
+        <div class="card-head card-head-toolbar">
+          <h3>Usulan Kelembagaan <span class="badge" id="countUsulan">0</span></h3>
+          <div class="toolbar">
+            <button class="btn btn-outline" id="btnExcelUsulan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Unduh Excel
+            </button>
+            <input type="search" id="searchUsulan" placeholder="Cari nama / NIK...">
+            <select id="filterUsulanLembaga">
+              <option value="">Semua Kelembagaan</option>
+            </select>
+            <select id="filterUsulanStatus">
+              <option value="">Semua Status</option>
+              <option value="diajukan">Menunggu Verifikasi</option>
+              <option value="disetujui">Disetujui</option>
+              <option value="dikembalikan">Dikembalikan</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+        </div>
+        <div class="us-groups" id="usGroups"><div class="empty-state">Memuat data...</div></div>
+      </div>
+    </section>
+
+    <!-- ============ KELEMBAGAAN (admin) ============ -->
+    <section class="page" id="page-lembaga">
+      <div class="card">
+        <div class="card-head card-head-toolbar">
+          <h3>Daftar Kelembagaan <span class="badge" id="countLembaga">0</span></h3>
+          <button class="btn btn-primary" id="btnTambahLembaga">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Tambah Kelembagaan
+          </button>
+        </div>
+        <div class="lembaga-grid" id="lembagaGrid"><div class="empty-state">Memuat data...</div></div>
+      </div>
+    </section>
+
+    <!-- ============ AKUN (admin) ============ -->
+    <section class="page" id="page-akun">
+      <div class="card">
+        <div class="card-head card-head-toolbar">
+          <h3>Akun Pengguna <span class="badge" id="countAkun">0</span></h3>
+          <div class="toolbar">
+            <input type="search" id="searchAkun" placeholder="Cari username / nama...">
+            <select id="filterAkunRole">
+              <option value="">Semua Role</option>
+              <option value="admin">Admin</option>
+              <option value="dinas">Dinas Perkebunan</option>
+              <option value="lembaga">Lembaga</option>
+            </select>
+            <select id="filterAkunLembaga">
+              <option value="">Semua Kelembagaan</option>
+            </select>
+            <button class="btn btn-primary" id="btnTambahAkun">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Tambah Akun
+            </button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Username</th><th>Nama</th><th>Role</th><th>Kelembagaan</th><th>Status</th><th>Dibuat</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="tbodyAkun"><tr class="empty-row"><td colspan="7">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BACKUP & RESTORE ============ -->
+    <section class="page" id="page-backup">
+
+      <div id="bkAdmin">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              </span>
+              <div>
+                <h3>Backup Database</h3>
+                <p class="card-sub">Salin seluruh database: data pekebun, kelembagaan, akun, surat, notifikasi, dan pengaturan</p>
+              </div>
+            </div>
+            <p class="muted">Backup disimpan sebagai file <strong>.sql</strong> di server dan dapat diunduh kapan saja. Riwayat 30 backup terbaru otomatis disimpan.</p>
+            <div class="toolbar" style="margin-top:14px">
+              <button type="button" class="btn btn-primary" id="btnBkCreate">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Buat Backup Sekarang
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-ico red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9"/><polyline points="3 12 6 12 9 12"/><path d="M13 8l5 4-5 4"/></svg>
+              </span>
+              <div>
+                <h3>Pulihkan Database</h3>
+                <p class="card-sub">Pulihkan database dari file backup .sql</p>
+              </div>
+            </div>
+            <p class="muted bk-danger-note"><strong>Perhatian:</strong> pemulihan akan <strong>menimpa seluruh data saat ini</strong> dengan isi file backup dan tidak dapat dibatalkan.</p>
+            <input type="file" id="bkFileRestore" accept=".sql" hidden>
+            <div class="toolbar" style="margin-top:14px">
+              <button type="button" class="btn btn-outline" id="btnBkChoose">Pilih File Backup (.sql)</button>
+              <button type="button" class="btn btn-danger" id="btnBkRestore" disabled>Pulihkan Database</button>
+            </div>
+            <p class="muted" id="bkRestoreFile" style="margin-top:8px"></p>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <div class="card-head card-head-toolbar">
+            <h3>Riwayat Backup <span class="badge" id="bkCount">0</span></h3>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr><th>Nama File</th><th>Ukuran</th><th>Dibuat</th><th class="ta-right">Aksi</th></tr>
+              </thead>
+              <tbody id="bkBody"><tr class="empty-row"><td colspan="4">Memuat data...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="bkLembaga" hidden>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </span>
+              <div>
+                <h3>Backup Data Kelembagaan</h3>
+                <p class="card-sub">Cadangkan seluruh data milik kelembagaan Anda</p>
+              </div>
+            </div>
+            <p class="muted">Backup berisi data pekebun, arsip surat, dan nomor surat (counter) milik kelembagaan Anda. Disimpan sebagai file <strong>.json</strong> dan diunduh otomatis ke perangkat Anda.</p>
+            <div class="toolbar" style="margin-top:14px">
+              <button type="button" class="btn btn-primary" id="btnBkLeCreate">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Unduh Backup Data Saya
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-ico red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9"/><polyline points="3 12 6 12 9 12"/><path d="M13 8l5 4-5 4"/></svg>
+              </span>
+              <div>
+                <h3>Pulihkan Data Kelembagaan</h3>
+                <p class="card-sub">Pulihkan data dari file backup kelembagaan Anda</p>
+              </div>
+            </div>
+            <p class="muted">Data pekebun yang sama akan <strong>diperbarui</strong>, data baru <strong>ditambahkan</strong>. Data lain (di luar file backup) tidak dihapus.</p>
+            <input type="file" id="bkFileLe" accept=".json" hidden>
+            <div class="toolbar" style="margin-top:14px">
+              <button type="button" class="btn btn-outline" id="btnBkLeChoose">Pilih File Backup (.json)</button>
+              <button type="button" class="btn btn-danger" id="btnBkLeRestore" disabled>Pulihkan Data</button>
+            </div>
+            <p class="muted" id="bkLeFile" style="margin-top:8px"></p>
+          </div>
+        </div>
+
+        <div class="card" id="bkLeReportCard" hidden style="margin-top:18px">
+          <div class="card-head">
+            <span class="card-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </span>
+            <div>
+              <h3>Hasil Pemulihan</h3>
+              <p class="card-sub" id="bkLeReportSub"></p>
+            </div>
+          </div>
+          <div class="warn-row" id="bkLeReportBody"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============ PENGATURAN ============ -->
+    <section class="page" id="page-pengaturan">
+      <div class="card settings-toolbar-card" id="pengaturanLembagaCard">
+        <div class="card-head card-head-toolbar">
+          <div class="st-head">
+            <span class="card-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M14 9h1"/><path d="M14 13h1"/><path d="M10 21v-4h4v4"/></svg>
+            </span>
+            <div>
+              <h3>Pilih Kelembagaan <span class="badge" id="countPengaturanLembaga">0</span></h3>
+              <p>Pilih kelembagaan yang akan diatur identitas, logo, dan kop suratnya</p>
+            </div>
+          </div>
+          <div class="toolbar">
+            <select id="selPengaturanLembaga" class="sel-lembaga">
+              <option value="">-- Pilih Kelembagaan --</option>
+            </select>
+            <button type="button" class="btn btn-primary" id="btnTambahLembagaPengaturan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Tambah Kelembagaan
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card detail-card" id="pengaturanDetailCard" hidden>
+        <div class="lembaga-detail">
+          <div class="ld-logo" id="ldLogo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M14 9h1"/><path d="M14 13h1"/><path d="M10 21v-4h4v4"/></svg>
+          </div>
+          <div class="ld-info">
+            <div class="ld-head">
+              <h3 id="ldNama">Kelembagaan</h3>
+              <span class="ld-type" id="ldJenis"></span>
+            </div>
+            <div class="ld-chips" id="ldChips"></div>
+          </div>
+          <div class="ld-stats" id="ldStats"></div>
+        </div>
+        <div class="ld-info-grid" id="ldInfoGrid"></div>
+        <div class="ro-banner" id="roBanner" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Mode Baca � Anda (Dinas Perkebunan) hanya dapat melihat detail kelembagaan.
+        </div>
+      </div>
+
+      <div class="settings-grid" id="pengaturanFormGrid">
+        <div class="settings-col">
+          <div class="card settings-form-card">
+            <div class="card-head">
+              <span class="card-ico small violet">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              </span>
+              <div>
+                <h3>Data Kelembagaan</h3>
+                <p class="card-sub">Identitas, kepengurusan, dan detail desa � dipakai pada semua surat otomatis</p>
+              </div>
+            </div>
+            <form id="formSettings" novalidate>
+              <div class="form-sec">
+                <div class="form-sec-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M14 9h1"/><path d="M14 13h1"/><path d="M10 21v-4h4v4"/></svg>
+                  Identitas Kelembagaan
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="sJenisLembaga">Jenis Kelembagaan</label>
+                    <input type="text" id="sJenisLembaga">
+                  </div>
+                  <div class="form-group">
+                    <label for="sSingkatan">Singkatan Jenis Kelembagaan</label>
+                    <input type="text" id="sSingkatan" placeholder="cth: KUD SARI SUBUR">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="sNamaLembaga">Nama Kelembagaan</label>
+                    <input type="text" id="sNamaLembaga">
+                  </div>
+                  <div class="form-group">
+                    <label for="sTahunAnggaran">Tahun Anggaran</label>
+                    <input type="text" id="sTahunAnggaran" placeholder="cth: 2026">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="sKodeSurat">Kode Nomor Surat</label>
+                  <input type="text" id="sKodeSurat" placeholder="cth: KUD-SS/MURA">
+                  <p class="hint">Dipakai pada nomor surat keanggotaan, misal 001/KUD-SS/MURA/2026.</p>
+                </div>
+              </div>
+
+              <div class="form-sec">
+                <div class="form-sec-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Kepengurusan &amp; Alamat
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="sKetua">Ketua Kelembagaan</label>
+                    <input type="text" id="sKetua">
+                  </div>
+                  <div class="form-group">
+                    <label for="sJabatan">Jabatan</label>
+                    <input type="text" id="sJabatan">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="sKetuaHp">No. HP Ketua Kelembagaan</label>
+                    <input type="tel" id="sKetuaHp" placeholder="cth: 081234567890">
+                  </div>
+                  <div class="form-group">
+                    <label for="sTempat">Tempat Penerbitan Surat</label>
+                    <input type="text" id="sTempat">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="sAlamat">Alamat Kelembagaan</label>
+                  <textarea id="sAlamat" rows="3"></textarea>
+                  <p class="hint">Contoh : Desa Tegal Sari Kecamatan Megang Sakti Kabupaten Musi Rawas Provinsi Sumatera Selatan</p>
+                </div>
+              </div>
+
+              <div class="form-sec">
+                <div class="form-sec-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Detail Desa <small>(untuk Surat Keterangan Desa)</small>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="sNamaDesa">Nama Desa</label>
+                    <input type="text" id="sNamaDesa" placeholder="cth: Tegal Sari">
+                  </div>
+                  <div class="form-group">
+                    <label for="sKepalaDesa">Nama Kepala Desa</label>
+                    <input type="text" id="sKepalaDesa" placeholder="cth: SISWOYO">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="sKepalaDesaHp">No. HP Kepala Desa</label>
+                    <input type="tel" id="sKepalaDesaHp" placeholder="cth: 081234567890">
+                  </div>
+                  <div class="form-group">
+                    <label for="sKodeSuratDesa">Kode Nomor Surat (Desa)</label>
+                    <input type="text" id="sKodeSuratDesa" placeholder="cth: PD-TS/MURA">
+                    <p class="hint">misal 001/PD-TS/MURA/2026</p>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="sDesaAlamat">Alamat Desa</label>
+                  <textarea id="sDesaAlamat" rows="2"></textarea>
+                  <p class="hint">Contoh : Desa Tegal Sari Kecamatan Megang Sakti Kabupaten Musi Rawas</p>
+                </div>
+              </div>
+
+              <div class="settings-note">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <p>Nomor surat otomatis: Surat Keterangan Keanggotaan Koperasi memakai Kode Nomor Surat kelembagaan (001/KUD-SS/MURA/2026); Keterangan Beda Nama &amp; Penguasaan Fisik Tanah memakai Kode Nomor Surat (Desa). Tahun Anggaran dipakai pada surat (TA.2026, Tahun 2026).</p>
+              </div>
+
+              <div class="settings-actions">
+                <button type="submit" class="btn btn-primary" id="btnSimpanPengaturan">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Simpan Pengaturan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="settings-col">
+          <div class="card settings-logo-card">
+            <div class="card-head">
+              <span class="card-ico small blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              </span>
+              <div>
+                <h3>Logo &amp; Kop Surat</h3>
+                <p class="card-sub">Logo tampil otomatis pada kop surat sesuai pengaturan</p>
+              </div>
+            </div>
+            <div class="logo-grid">
+              <div class="logo-slot">
+                <span class="logo-slot-label">Logo Kelembagaan</span>
+                <div class="logo-preview" id="logoPreview">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                </div>
+                <div class="form-actions" id="logoActions">
+                  <button type="button" class="btn btn-outline" id="btnUploadLogo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload
+                  </button>
+                  <button type="button" class="btn btn-danger" id="btnHapusLogo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Hapus
+                  </button>
+                </div>
+                <input type="file" id="fileLogo" accept="image/*" hidden>
+                <p class="hint">PNG / JPG maks. &plusmn; 2 MB</p>
+              </div>
+              <div class="logo-slot">
+                <span class="logo-slot-label">Logo Desa</span>
+                <div class="logo-preview" id="logoDesaPreview">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                </div>
+                <div class="form-actions" id="logoDesaActions">
+                  <button type="button" class="btn btn-outline" id="btnUploadLogoDesa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload
+                  </button>
+                  <button type="button" class="btn btn-danger" id="btnHapusLogoDesa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Hapus
+                  </button>
+                </div>
+                <input type="file" id="fileLogoDesa" accept="image/*" hidden>
+                <p class="hint">PNG / JPG maks. &plusmn; 2 MB � kop SK Desa</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card batas-card" id="batasUsulanCard" hidden>
+        <div class="card-head card-head-toolbar">
+          <div class="st-head">
+            <span class="card-ico amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
+            <div>
+              <h3>Batas Waktu Usulan <span class="badge" id="batasUsulanStatus"></span></h3>
+              <p>Tenggat pengajuan usulan pelatihan SDMPKS � Tahun Anggaran <b id="batasTaTahun">2026</b></p>
+            </div>
+          </div>
+          <button type="button" class="btn btn-ghost" id="btnHapusBatas" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Hapus
+          </button>
+        </div>
+        <p class="hint">Setelah batas waktu lewat, lembaga tidak dapat mengajukan/mengajukan ulang usulan secara otomatis � input dan perbaikan data pekebun tetap aktif. Dinas dapat memperpanjang kapan saja.</p>
+        <div class="batas-form">
+          <div class="form-group">
+            <label for="inpBatasUsulan">Batas Waktu</label>
+            <input type="datetime-local" id="inpBatasUsulan">
+          </div>
+          <button type="button" class="btn btn-primary" id="btnSimpanBatas">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Simpan Batas Waktu
+          </button>
+          <button type="button" class="btn btn-green" id="btnPerpanjangBatas">+ 7 Hari</button>
+        </div>
+      </div>
+
+      <div class="card" id="kopCard">
+        <div class="card-head">
+          <span class="card-ico small green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </span>
+          <div>
+            <h3>Pratinjau Kop Surat</h3>
+            <p class="card-sub">Tampilan kop mengikuti data &amp; logo di atas � perbarui dengan tombol Simpan Pengaturan</p>
+          </div>
+        </div>
+        <div class="sheet-preview" id="kopWrap">
+          <div class="sheet kop-prev" id="kopPreview"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TENTANG ============ -->
+    <section class="page" id="page-tentang">
+      <div class="about-wrap">
+        <div class="card about-card">
+          <div class="about-head">
+            <div class="brand-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+            </div>
+            <h3>Tentang Aplikasi</h3>
+          </div>
+          <p class="about-desc">Aplikasi ini dibuat untuk membantu pengelola Kelembagaan Pekebun dalam usulan pelatihan SDMPKS BPDP agar bisa lebih efektif dan efesian.</p>
+
+          <div class="about-info">
+            <div class="info-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <div>
+                <strong>Hubungi Kami</strong>
+                <span><a href="https://wa.me/6282227283416" target="_blank" rel="noopener">0822-2728-3416</a></span>
+              </div>
+            </div>
+            <div class="info-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              <div>
+                <strong>Rekening Donasi</strong>
+                <span>082227283416 &bull; Allo Bank a.n. DEDEK SULAIMAN</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="about-photo">
+            <div class="photo-glow"></div>
+            <div class="photo-frame">
+              <img src="assets/img/bukti-donasi.png" alt="Bukti Donasi">
+              <div class="photo-badge">
+                <strong>Dedek Sulaiman, S.Pd.I.</strong>
+                <span>Ketua KUD Sari Subur</span>
+              </div>
+            </div>
+            <p class="photo-caption">Terima kasih atas dukungan Bapak/Ibu</p>
+          </div>
+
+          <p class="about-note">Donasi Bapak/Ibu kiranya dapat bermanfaat untuk mengembangkan aplikasi ini kedepannya.</p>
+          <div class="about-wassalam">Wassalamu&rsquo;alaikum, Wr.Wb</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div id="printArea"></div>
+<div id="pdfOverlay"></div>
+<div id="toastWrap"></div>
+
+<!-- ============ MODAL KEMBALIKAN / OVERRIDE ============ -->
+<div class="modal-backdrop" id="modalKembali" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="kembaliHead">Kembalikan Berkas</h3>
+      <button type="button" class="modal-close" id="btnTutupKembali" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-sub" id="kembaliInfo"></p>
+      <div class="form-group" id="kembaliTargetWrap" hidden>
+        <label for="kembaliTarget">Status Setelah Override *</label>
+        <select id="kembaliTarget">
+          <option value="dikembalikan">Dikembalikan (perlu pengajuan ulang)</option>
+          <option value="draft">Draft (edit langsung oleh lembaga)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="keterangan" id="keteranganLabel">Keterangan *</label>
+        <textarea id="keterangan" rows="4" placeholder="Jelaskan alasan berkas dikembalikan..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="btnBatalKembali">Batal</button>
+        <button type="button" class="btn btn-danger" id="btnSimpanKembali">Kembalikan Berkas</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL PERINGATAN USULAN ============ -->
+<div class="modal-backdrop" id="modalPeringatanUsulan" hidden>
+  <div class="modal modal-sm">
+    <div class="warn-modal">
+      <div class="warn-ico" id="warnIco">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h3 id="warnJudul">Perhatian</h3>
+      <p class="modal-sub" id="warnPesan"></p>
+      <div class="warn-box" id="warnDetail" hidden></div>
+      <div class="modal-actions center">
+        <button type="button" class="btn btn-primary" id="btnMengertiPeringatan">Mengerti</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL RIWAYAT ============ -->
+<div class="modal-backdrop" id="modalRiwayat" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Riwayat Berkas</h3>
+      <button type="button" class="modal-close" id="btnTutupRiwayat" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="timeline" id="timelineRiwayat"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DOKUMEN PEKEBUN ============ -->
+<div class="modal-backdrop" id="modalDokumen" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Dokumen Pekebun</h3>
+      <button type="button" class="modal-close" id="btnTutupDokumen" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-sub" id="dokumenSub"></p>
+      <div class="form-group" id="dokUploadWrap">
+        <label>Upload Dokumen Pendukung *</label>
+        <div class="doc-upload" id="docDropzone">
+          <input type="file" id="fileDokumen" accept="application/pdf" hidden>
+          <button type="button" class="btn btn-outline" id="btnPilihDokumen">Pilih File PDF</button>
+          <span class="doc-upload-hint">atau seret &amp; letakkan file di sini &bull; PDF maks. 5 MB</span>
+        </div>
+      </div>
+      <div class="doc-list" id="docList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL LIHAT DOKUMEN (dinas / admin) ============ -->
+<div class="modal-backdrop" id="modalLihatDokumen" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Dokumen Terlampir</h3>
+      <button type="button" class="modal-close" id="btnTutupLihatDokumen" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-sub" id="lihatDokumenSub"></p>
+      <div class="doc-list" id="lihatDocList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DETAIL PEKEBUN ============ -->
+<div class="modal-backdrop" id="modalDetailPekebun" hidden>
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3>Detail Pekebun</h3>
+      <button type="button" class="modal-close" id="btnTutupDetailPekebun" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-sub" id="detailSub"></p>
+      <div class="detail-grid" id="detailGrid"></div>
+      <div class="detail-section">
+        <h4>Dokumen Terlampir</h4>
+        <div class="doc-list" id="detailDocList"></div>
+      </div>
+      <div class="modal-actions" id="detailActions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL VERIFIKASI & EDIT USULAN ============ -->
+<div class="modal-backdrop" id="modalVerifikasi" hidden>
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3>Verifikasi &amp; Edit Usulan</h3>
+      <button type="button" class="modal-close" id="btnTutupVerifikasi" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-sub" id="verifikasiSub"></p>
+      <form id="formVerifikasi" novalidate>
+        <input type="hidden" id="vId">
+        <div class="form-sec">
+          <div class="form-sec-title">Identitas</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vNama">Nama Pekebun *</label>
+              <input type="text" id="vNama" placeholder="Nama lengkap pekebun">
+            </div>
+            <div class="form-group">
+              <label for="vNik">NIK *</label>
+              <input type="text" id="vNik" maxlength="16" inputmode="numeric" placeholder="16 digit">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vNoKk">Nomor Kartu Keluarga</label>
+              <input type="text" id="vNoKk" maxlength="16" inputmode="numeric" placeholder="16 digit No. KK">
+            </div>
+            <div class="form-group">
+              <label for="vJk">Jenis Kelamin *</label>
+              <select id="vJk">
+                <option value="">-- Pilih --</option>
+                <option value="LAKI-LAKI">Laki-Laki</option>
+                <option value="PEREMPUAN">Perempuan</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vTempatLahir">Tempat Lahir</label>
+              <input type="text" id="vTempatLahir" placeholder="cth: Megang Sakti">
+            </div>
+            <div class="form-group">
+              <label for="vTanggalLahir">Tanggal Lahir</label>
+              <input type="date" id="vTanggalLahir">
+            </div>
+          </div>
+        </div>
+        <div class="form-sec">
+          <div class="form-sec-title">Keikutsertaan Pelatihan</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vJenisPelatihan">Jenis Pelatihan *</label>
+              <select id="vJenisPelatihan">
+                <option value="">-- Pilih Jenis Pelatihan --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="vJalur">Jalur *</label>
+              <select id="vJalur">
+                <option value="">-- Pilih Jalur --</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-sec">
+          <div class="form-sec-title">Alamat Wilayah</div>
+          <div class="form-grid-4">
+            <div class="form-group">
+              <label for="vProvinsi">Provinsi *</label>
+              <select id="vProvinsi">
+                <option value="">-- Pilih Provinsi --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="vKabupaten">Kabupaten/Kota *</label>
+              <select id="vKabupaten" disabled>
+                <option value="">-- Pilih Kabupaten --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="vKecamatan">Kecamatan *</label>
+              <select id="vKecamatan" disabled>
+                <option value="">-- Pilih Kecamatan --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="vDesa">Desa/Kelurahan *</label>
+              <select id="vDesa" disabled>
+                <option value="">-- Pilih Desa --</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vHp">No. HP *</label>
+              <input type="text" id="vHp" placeholder="08xxxxxxxxxx">
+            </div>
+            <div class="form-group">
+              <label for="vKepalaDesa">Kepala Desa</label>
+              <input type="text" id="vKepalaDesa" placeholder="Nama kepala desa">
+            </div>
+          </div>
+        </div>
+      </form>
+      <div class="detail-section">
+        <h4>Dokumen Terlampir</h4>
+        <div class="doc-upload" id="vDocDropzone">
+          <input type="file" id="vFileDokumen" accept="application/pdf" hidden>
+          <button type="button" class="btn btn-outline" id="btnPilihDokumen2">Pilih File PDF</button>
+          <span class="doc-upload-hint">atau seret &amp; letakkan di sini &bull; PDF maks. 5 MB</span>
+        </div>
+        <div class="doc-list" id="vDocList"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="btnBatalVerifikasi">Tutup</button>
+        <button type="button" class="btn btn-outline" id="btnOverrideUsulan">Override (Buka Kembali)</button>
+        <button type="button" class="btn btn-outline" id="btnSimpanVerifikasi">Simpan Perubahan</button>
+        <button type="button" class="btn btn-danger" id="btnTolakVerifikasi">Tolak (Kembalikan)</button>
+        <button type="button" class="btn btn-green" id="btnTerimaVerifikasi">Terima (Setujui)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL GANTI PASSWORD ============ -->
+<div class="modal-backdrop" id="modalPassword" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Ganti Password</h3>
+      <button type="button" class="modal-close" id="btnTutupPassword" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="pwOld">Password Lama *</label>
+        <input type="password" id="pwOld" autocomplete="current-password">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pwNew">Password Baru *</label>
+          <input type="password" id="pwNew" autocomplete="new-password" placeholder="Minimal 6 karakter">
+        </div>
+        <div class="form-group">
+          <label for="pwNew2">Ulangi Password Baru *</label>
+          <input type="password" id="pwNew2" autocomplete="new-password">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="btnBatalPassword">Batal</button>
+        <button type="button" class="btn btn-primary" id="btnSimpanPassword">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL AKUN ============ -->
+<div class="modal-backdrop" id="modalAkun" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="akunModalTitle">Tambah Akun</h3>
+      <button type="button" class="modal-close" id="btnTutupAkun" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="formAkun" novalidate>
+        <input type="hidden" id="aId">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aUsername">Username *</label>
+            <input type="text" id="aUsername" placeholder="cth: dinas_palembang">
+          </div>
+          <div class="form-group">
+            <label for="aNama">Nama Lengkap *</label>
+            <input type="text" id="aNama" placeholder="Nama pengguna akun">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aRole">Role *</label>
+            <select id="aRole">
+              <option value="">-- Pilih Role --</option>
+              <option value="admin">Admin</option>
+              <option value="dinas">Dinas Perkebunan</option>
+              <option value="lembaga">Lembaga Pekebun</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="aLembaga">Kelembagaan <span id="aLembagaReq">*</span></label>
+            <select id="aLembaga">
+              <option value="">-- Pilih Kelembagaan --</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="aPassWrap">
+          <label for="aPassword" id="aPassLabel">Password *</label>
+          <input type="password" id="aPassword" placeholder="Minimal 6 karakter" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="checkbox" style="color:var(--ink);">
+            <input type="checkbox" id="aAktif" checked>
+            <span>Akun aktif</span>
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="btnBatalAkun">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Akun</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL RESET PASSWORD ============ -->
+<div class="modal-backdrop" id="modalResetPass" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Reset Password</h3>
+      <button type="button" class="modal-close" id="btnTutupResetPass" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-sub" id="resetPassInfo"></p>
+      <div class="form-group">
+        <label for="rpPassword">Password Baru *</label>
+        <input type="password" id="rpPassword" placeholder="Minimal 6 karakter" autocomplete="new-password">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="btnBatalResetPass">Batal</button>
+        <button type="button" class="btn btn-primary" id="btnSimpanResetPass">Reset Password</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL KONFIRMASI ============ -->
+<div class="modal-backdrop" id="modalConfirm" hidden>
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <h3 id="cfTitle">Konfirmasi</h3>
+      <button type="button" class="modal-close" id="btnTutupConfirm" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-sub" id="cfMessage"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="btnBatalConfirm">Batal</button>
+        <button type="button" class="btn btn-danger" id="btnYaConfirm">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL KELEMBAGAAN ============ -->
+<div class="modal-backdrop" id="modalLembaga" hidden>
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="lembagaModalTitle">Tambah Kelembagaan</h3>
+      <button type="button" class="modal-close" id="btnTutupLembaga" title="Tutup">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="formLembaga" novalidate>
+        <input type="hidden" id="lId">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="lNama">Nama Kelembagaan *</label>
+            <input type="text" id="lNama" placeholder="cth: KOPERASI UNIT DESA SARI SUBUR">
+          </div>
+          <div class="form-group">
+            <label for="lJenis">Jenis Kelembagaan</label>
+            <input type="text" id="lJenis" placeholder="cth: KOPERASI UNIT DESA (KUD)">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="lSingkatan">Singkatan Jenis Kelembagaan</label>
+            <input type="text" id="lSingkatan" placeholder="cth: KUD SARI SUBUR">
+          </div>
+          <div class="form-group">
+            <label for="lKetua">Ketua</label>
+            <input type="text" id="lKetua">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="lJabatan">Jabatan</label>
+            <input type="text" id="lJabatan">
+          </div>
+          <div class="form-group">
+            <label for="lTahun">Tahun Anggaran</label>
+            <input type="text" id="lTahun">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="lAlamat">Alamat</label>
+          <textarea id="lAlamat" rows="3"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="lTempat">Tempat Penerbitan Surat</label>
+            <input type="text" id="lTempat">
+          </div>
+          <div class="form-group">
+            <label for="lKodeSurat">Kode Nomor Surat</label>
+            <input type="text" id="lKodeSurat">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="lKepalaDesa">Nama Kepala Desa</label>
+          <input type="text" id="lKepalaDesa" placeholder="cth: SISWOYO">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="btnBatalLembaga">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Kelembagaan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js?v=27"></script>
+<script src="js/auth.js?v=26"></script>
+<script src="js/store.js?v=36"></script>
+<script src="js/wilayah.js?v=31"></script>
+<script src="js/data.js?v=44"></script>
+<script src="js/berkas.js?v=41"></script>
+<script src="js/excel.js?v=34"></script>
+<script src="js/surat.js?v=67"></script>
+<script src="js/cetak.js?v=28"></script>
+<script src="js/pengaturan.js?v=36"></script>
+<script src="js/backup.js?v=1"></script>
+<script src="js/chart.js?v=25"></script>
+<script src="js/notifikasi.js?v=26"></script>
+</body>
+</html>
+
+
+
+
+
+
+
