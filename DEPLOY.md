@@ -223,3 +223,51 @@ sudo crontab -e
 | Upload PDF ditolak | ukuran melebihi limit | Naikkan `client_max_body_size` + `PHP_VALUE upload_max_filesize` |
 | 500 di semua API | PHP ext pdo_mysql kurang | `sudo apt install php8.3-mysql` lalu reload fpm |
 | Aset tidak termuat (CSS/JS) | Nginx `try_files` salah | Pastikan blok `location /` menuju `try_files $uri $uri/ =404` |
+
+---
+
+## Lampiran: Topologi Deploy Aktual (VPS 31.97.50.22 - 5 Agt 2026)
+
+> Setup di atas (nginx host) TIDAK dipakai. VPS ini menjalankan project KUD (Docker, port 80/443) sehingga SDMPKS dipasang sebagai stack Docker kedua. Referensi utama: bagian ini.
+
+### Arsitektur
+
+```
+/var/www/sdmpks/
+??? docker-compose.yml          # stack SDMPKS (project: sdmpks)
+?   ??? sdmpks-db     MariaDB 10.11  (container-only, network sdmpks_sdmpks-net)
+?   ??? sdmpks-app    PHP 8.3-fpm-alpine + pdo_mysql (bind ./app:/var/www)
+?   ??? sdmpks-nginx  nginx:alpine  (host port 8080, acme webroot proxy)
+??? app/                       # clone repo via deploy key SSH (/root/keykud)
+```
+
+- Database: `sdmpks_db` (user `sdmpks_user`), host `db` (nama container, bukan 127.0.0.1)
+- Akses publik domain: port 80/443 dipegang container `kud-nginx` (project KUD).
+  `sdmpks-nginx` di-`docker network connect` ke `kud_kud-network`; blok server
+  `aplikasisdmpksa.online` ditambahkan di `/var/www/kud/docker/nginx.conf`.
+- SSL: Let's Encrypt via certbot webroot (`-w /var/www/sdmpks/app`), path
+  `/.well-known/acme-challenge/` diproxy kud-nginx ? sdmpks-nginx.
+  Auto-renew certbot + hook deploy `/etc/letsencrypt/renewal-hooks/deploy/sdmpks-reload.sh`.
+- Backdoor akses langsung: `http://31.97.50.22:8080` (HTTP tanpa SSL).
+
+### PENTING: peringatan git pull project KUD
+
+Blok SDMPKS hidup di `/var/www/kud/docker/nginx.conf` (milik repo project 1).
+Jika project KUD di-`git pull`, blok SDMPKS bisa tertimpa ? domain SDMPKS 404.
+Pulihkan: append blok server port 80 (acme + redirect) & 443 dari bagian
+`docker/` pada repo SDMPKS (lihat `deploy/sdmpks-block.conf` & `sdmpks-ssl-block.conf`),
+lalu `docker restart kud-nginx`.
+
+### Update aplikasi SDMPKS
+
+```bash
+cd /var/www/sdmpks/app && git pull
+docker exec sdmpks-app php -l api/*.php >/dev/null
+docker exec sdmpks-nginx nginx -s reload   # (statis, tak perlu, tapi aman)
+```
+
+### Backup DB (cron host)
+
+```cron
+0 2 * * * docker exec sdmpks-db mariadb-dump -uroot -pSdmpksRoot#2026! sdmpks_db > /var/backups/sdmpks-$(date +\%F).sql && find /var/backups -name 'sdmpks-*.sql' -mtime +7 -delete
+```
