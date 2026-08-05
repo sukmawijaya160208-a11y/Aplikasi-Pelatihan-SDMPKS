@@ -374,4 +374,4 @@ INSERT INTO role_permissions (role_id, permission_id) VALUES
 
 -- Akun admin bawaan (password: admin123) - WAJIB GANTI setelah login pertama
 INSERT INTO users (username, password, nama, role, aktif) VALUES
-('admin', '$(2y$10$nRmSRBeEsI8MNZPy/UTH.unbJGXzFyjAd1xqm4okCJhkI9Miebjli)', 'Administrator Aplikasi', 'admin', 1);
+('admin', '$2y$10$nRmSRBeEsI8MNZPy/UTH.unbJGXzFyjAd1xqm4okCJhkI9Miebjli', 'Administrator Aplikasi', 'admin', 1);
