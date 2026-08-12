@@ -36,7 +36,13 @@ if ($u['role'] === 'lembaga') {
     $st->execute([$lid]);
     $out['stats']['surat'] = (int)$st->fetch()['n'];
 
-    $st = pdo()->prepare('SELECT jenis_pelatihan, COUNT(*) AS n FROM pekebun WHERE lembaga_id = ? AND jenis_pelatihan <> "" GROUP BY jenis_pelatihan ORDER BY n DESC');
+    $st = pdo()->prepare(
+        'SELECT CASE WHEN jenis_pelatihan = "" THEN "Belum Diisi" ELSE jenis_pelatihan END AS jenis_pelatihan,
+                COUNT(*) AS n
+         FROM pekebun WHERE lembaga_id = ?
+         GROUP BY jenis_pelatihan
+         ORDER BY (jenis_pelatihan = ""), n DESC'
+    );
     $st->execute([$lid]);
     $out['stats']['per_pelatihan'] = array_map(function ($r) {
         $r['n'] = (int)$r['n'];
@@ -80,7 +86,13 @@ if ($u['role'] === 'lembaga') {
     $out['stats']['per_pelatihan'] = array_map(function ($r) {
         $r['n'] = (int)$r['n'];
         return $r;
-    }, pdo()->query('SELECT jenis_pelatihan, COUNT(*) AS n FROM pekebun WHERE jenis_pelatihan <> "" GROUP BY jenis_pelatihan ORDER BY n DESC')->fetchAll());
+    }, pdo()->query(
+        'SELECT CASE WHEN jenis_pelatihan = "" THEN "Belum Diisi" ELSE jenis_pelatihan END AS jenis_pelatihan,
+                COUNT(*) AS n
+         FROM pekebun
+         GROUP BY jenis_pelatihan
+         ORDER BY (jenis_pelatihan = ""), n DESC'
+    )->fetchAll());
     if ($u['role'] === 'admin') {
         $out['stats']['akun'] = (int)pdo()->query('SELECT COUNT(*) FROM users')->fetchColumn();
     }
