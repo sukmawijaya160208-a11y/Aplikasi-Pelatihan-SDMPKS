@@ -25,7 +25,7 @@
       if (ctx1) {
         if (window._chartJK) window._chartJK.destroy();
         var empty1 = document.getElementById('chartJKEmpty');
-        var pel = stats.per_pelatihan || [];
+        var pel = (stats.stats && stats.stats.per_pelatihan) || stats.per_pelatihan || [];
         var isEmpty = !pel.length;
         if (empty1) empty1.hidden = !isEmpty;
         ctx1.style.display = isEmpty ? 'none' : 'block';
