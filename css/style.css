@@ -998,6 +998,7 @@ a { color: var(--green-600); text-decoration: none; }
 .st-diajukan { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
 .st-disetujui { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
 .st-dikembalikan { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.st-duplikat { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; font-weight: 700; }
 
 .alasan {
   display: inline-block;

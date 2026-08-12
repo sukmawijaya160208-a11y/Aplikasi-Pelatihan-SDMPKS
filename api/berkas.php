@@ -37,7 +37,11 @@ if ($act === 'list') {
         $st = pdo()->prepare(
             'SELECT p.id, p.lembaga_id, p.nama, p.nik, p.no_kk, p.jk, p.tempat_lahir, p.tanggal_lahir,
                     p.jenis_pelatihan, p.jalur, p.alamat, p.hp, p.desa, p.provinsi, p.kabupaten, p.kecamatan,
-                    p.kepala_desa, p.status, p.tgl_input, p.tgl_diajukan, p.tgl_verifikasi, p.verifikator, p.alasan
+                    p.kepala_desa, p.status, p.tgl_input, p.tgl_diajukan, p.tgl_verifikasi, p.verifikator, p.alasan,
+                    CASE WHEN p.no_kk <> "" AND EXISTS (
+                        SELECT 1 FROM pekebun d
+                        WHERE d.id <> p.id AND d.nik = p.nik AND d.no_kk = p.no_kk AND d.no_kk <> ""
+                    ) THEN 1 ELSE 0 END AS duplikat
              FROM pekebun p WHERE lembaga_id = ? ORDER BY p.id DESC'
         );
         $st->execute([$u['lembaga_id']]);
@@ -64,6 +68,10 @@ if ($act === 'list') {
                     p.saksi2_nama, p.saksi2_umur, p.saksi2_pekerjaan, p.saksi2_alamat, p.luas_lahan, p.no_shm,
                     p.pemilik_sebelumnya, p.status, p.tgl_input, p.tgl_diajukan, p.tgl_verifikasi,
                     p.verifikator, p.alasan,
+                    CASE WHEN p.no_kk <> "" AND EXISTS (
+                        SELECT 1 FROM pekebun d
+                        WHERE d.id <> p.id AND d.nik = p.nik AND d.no_kk = p.no_kk AND d.no_kk <> ""
+                    ) THEN 1 ELSE 0 END AS duplikat,
                     COALESCE(l.nama_lembaga, "") AS lembaga_nama
              FROM pekebun p LEFT JOIN lembaga l ON l.id = p.lembaga_id
              ORDER BY p.id DESC LIMIT 10000'
@@ -90,6 +98,24 @@ if ($act === 'ajukan') {
     $row = can_act((int)($d['id'] ?? 0));
     if (!in_array($row['status'], ['draft', 'dikembalikan'], true)) {
         json_err('Berkas tidak dapat diajukan pada status ini.');
+    }
+
+    // ---- Duplikat 100%: NIK + No. KK sama persis dengan data lain (jaring pengaman) ----
+    if ($row['no_kk'] !== '') {
+        $dup = pdo()->prepare(
+            'SELECT id, nama FROM pekebun
+             WHERE id <> ? AND nik = ? AND no_kk = ? AND no_kk <> "" LIMIT 1'
+        );
+        $dup->execute([$row['id'], $row['nik'], $row['no_kk']]);
+        $dupRow = $dup->fetch();
+        if ($dupRow) {
+            json_err(
+                'Data dengan NIK ' . $row['nik'] . ' dan No. KK ' . $row['no_kk'] . ' terdeteksi ganda/duplikat 100% (terdaftar juga atas nama ' . $dupRow['nama'] . '). Data duplikat otomatis terfilter dan tidak dapat diajukan ke Dinas Kabupaten. Hapus atau perbaiki salah satu data terlebih dahulu.',
+                422,
+                'duplikat_nik_kk',
+                ['nama' => $dupRow['nama'], 'nik' => $row['nik'], 'no_kk' => $row['no_kk']]
+            );
+        }
     }
     $cDoc = pdo()->prepare('SELECT COUNT(*) FROM dokumen WHERE pekebun_id = ?');
     $cDoc->execute([$row['id']]);

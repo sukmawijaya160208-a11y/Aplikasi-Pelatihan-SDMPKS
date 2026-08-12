@@ -390,7 +390,7 @@
     tb.innerHTML = rows.map(function (p, i) {
       var aksi = '';
       if (isLembaga || isAdmin) {
-        if (isLembaga && window.AppBerkas && AppBerkas.dapatDiajukan(p)) {
+        if (isLembaga && window.AppBerkas && AppBerkas.dapatDiajukan(p) && Number(p.duplikat) !== 1) {
           aksi += '<button class="act-btn submit" data-act="ajukan" data-id="' + p.id + '" title="' + (p.status === 'dikembalikan' ? 'Ajukan Ulang' : 'Ajukan Verifikasi') + '">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button>';
         }
@@ -411,7 +411,7 @@
         '<td>' + esc(p.jk) + '</td>' +
         '<td>' + esc(p.alamat) + '</td>' +
         '<td>' + esc(p.hp) + '</td>' +
-        '<td>' + (window.AppBerkas ? AppBerkas.badge(p.status) : '') + '</td>' +
+        '<td>' + (window.AppBerkas ? AppBerkas.badge(p.status) + AppBerkas.badgeDuplikat(p) : '') + '</td>' +
         '<td>' + fmtTglShort(p.tgl_input) + '</td>' +
         '<td><div class="actions">' + aksi + '</div></td>' +
         '</tr>';
@@ -841,7 +841,7 @@
         var pa = state.rows.filter(function (x) { return String(x.id) === id; })[0];
         if (!pa) return;
         if (!window.AppBerkas) return;
-        if (AppBerkas.dapatDiajukan(pa)) {
+        if (AppBerkas.dapatDiajukan(pa) && Number(pa.duplikat) !== 1) {
           AppDokumen.list(pa.id).then(function (docs) {
             if (!docs.length) {
               AppToast('Upload dokumen (PDF, maks. 5 MB) pekebun terlebih dahulu sebelum mengajukan.', 'warn');

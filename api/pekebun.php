@@ -32,6 +32,7 @@ if ($act === 'list') {
     $q = trim((string)($_GET['search'] ?? ''));
     $jk = trim((string)($_GET['jk'] ?? ''));
     $status = trim((string)($_GET['status'] ?? ''));
+    $duplikat = trim((string)($_GET['duplikat'] ?? ''));
     $lembagaId = (int)($_GET['lembaga_id'] ?? 0);
 
     $sql = 'SELECT p.id, p.lembaga_id, p.nama, p.nik, p.no_kk, p.jk, p.tempat_lahir, p.tanggal_lahir,
@@ -42,6 +43,10 @@ if ($act === 'list') {
                    p.saksi2_nama, p.saksi2_umur, p.saksi2_pekerjaan, p.saksi2_alamat, p.luas_lahan, p.no_shm,
                    p.pemilik_sebelumnya, p.status, p.tgl_input, p.tgl_diajukan, p.tgl_verifikasi,
                    p.verifikator, p.alasan,
+                   CASE WHEN p.no_kk <> "" AND EXISTS (
+                       SELECT 1 FROM pekebun d
+                       WHERE d.id <> p.id AND d.nik = p.nik AND d.no_kk = p.no_kk AND d.no_kk <> ""
+                   ) THEN 1 ELSE 0 END AS duplikat,
                    COALESCE(l.nama_lembaga, "") AS lembaga_nama
             FROM pekebun p LEFT JOIN lembaga l ON l.id = p.lembaga_id
             WHERE 1=1';
@@ -65,6 +70,12 @@ if ($act === 'list') {
     if ($status !== '') {
         $sql .= ' AND p.status = ?';
         $params[] = $status;
+    }
+    if ($duplikat === '1') {
+        $sql .= ' AND p.no_kk <> "" AND EXISTS (
+            SELECT 1 FROM pekebun d
+            WHERE d.id <> p.id AND d.nik = p.nik AND d.no_kk = p.no_kk AND d.no_kk <> ""
+        )';
     }
     $sql .= ' ORDER BY p.id DESC LIMIT 5000';
     $st = pdo()->prepare($sql);

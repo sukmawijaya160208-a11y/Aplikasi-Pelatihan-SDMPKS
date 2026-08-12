@@ -16,6 +16,9 @@
     badge: function (st) {
       var map = { draft: 'st-draft', diajukan: 'st-diajukan', disetujui: 'st-disetujui', dikembalikan: 'st-dikembalikan' };
       return '<span class="badge-status ' + (map[st] || 'st-draft') + '">' + (AppBerkas.STATUS[st] || st || 'Draft') + '</span>';
+    },
+    badgeDuplikat: function (p) {
+      return p && Number(p.duplikat) === 1 ? '<span class="badge-status st-duplikat">Duplikat</span>' : '';
     }
   };
 
@@ -104,6 +107,14 @@
         '<div class="warn-row"><span>Diusulkan Atas Nama</span><strong>' + esc(detail.nama || '-') + '</strong></div>' +
         '<div class="warn-row"><span>NIK</span><strong>' + esc(detail.nik || '-') + '</strong></div>' +
         '<div class="warn-row"><span>Tahun Anggaran</span><strong>' + esc(String(tahun)) + '</strong></div>';
+    } else if (kind === 'duplikat') {
+      judul.textContent = 'Data Duplikat 100%';
+      pesan.textContent = 'Data atas nama ' + (detail.nama || '-') + ' dengan NIK ' + (detail.nik || '-') + ' dan No. KK ' + (detail.no_kk || '-') + ' terdeteksi ganda/duplikat 100% (NIK dan No. KK sama persis dengan data lain). Data ini otomatis terfilter dan TIDAK dapat diajukan ke Dinas Kabupaten. Hapus atau perbaiki salah satu data duplikat terlebih dahulu.';
+      box.hidden = false;
+      box.innerHTML =
+        '<div class="warn-row"><span>Nama</span><strong>' + esc(detail.nama || '-') + '</strong></div>' +
+        '<div class="warn-row"><span>NIK</span><strong>' + esc(detail.nik || '-') + '</strong></div>' +
+        '<div class="warn-row"><span>No. KK</span><strong>' + esc(detail.no_kk || '-') + '</strong></div>';
     } else {
       judul.textContent = 'NIK Sudah Diusulkan';
       pesan.textContent = 'NIK ' + (detail.nik || '-') + ' telah diusulkan pada Tahun Anggaran ' + tahun + ' atas nama ' + (detail.nama || '-') + '. Satu NIK hanya dapat diajukan satu kali dalam satu tahun anggaran.';
@@ -343,7 +354,9 @@
       var aksi = '<button class="btn btn-xs btn-outline" data-act="detail" data-id="' + p.id + '">Detail</button>' +
         '<button class="btn btn-xs btn-ghost" data-act="riwayat" data-id="' + p.id + '">Riwayat</button>';
       if (AppBerkas.dapatDiajukan(p)) {
-        if (terkunci) {
+        if (p.duplikat) {
+          aksi = '<button class="btn btn-xs btn-lock" data-act="info-duplikat" data-id="' + p.id + '" title="Data terdeteksi ganda/duplikat 100% (NIK + No. KK sama) — tidak dapat diajukan ke Dinas Kabupaten">' + ICON_LOCK + ' Duplikat</button>' + aksi;
+        } else if (terkunci) {
           aksi = '<button class="btn btn-xs btn-lock" data-act="info-lock" title="Batas waktu usulan telah berakhir">' + ICON_LOCK + ' Terkunci</button>' + aksi;
         } else {
           aksi = '<button class="btn btn-xs btn-primary" data-act="ajukan" data-id="' + p.id + '">' +
@@ -355,7 +368,7 @@
         '<td><strong>' + esc(p.nama) + '</strong></td>' +
         '<td>' + esc(p.nik) + '</td>' +
         '<td>' + esc(p.desa || '-') + '</td>' +
-        '<td>' + AppBerkas.badge(p.status) + '</td>' +
+        '<td>' + AppBerkas.badge(p.status) + AppBerkas.badgeDuplikat(p) + '</td>' +
         '<td>' + (p.tgl_diajukan ? fmtTglShort(p.tgl_diajukan) : '-') + '</td>' +
         '<td>' + (p.alasan ? '<span class="alasan" title="' + esc(p.alasan) + '">' + esc(p.alasan) + '</span>' : '-') + '</td>' +
         '<td><div class="actions">' + aksi + '</div></td>' +
@@ -550,7 +563,7 @@
           '<td><strong>' + esc(p.nama) + '</strong></td>' +
           '<td>' + esc(p.nik) + '</td>' +
           '<td>' + esc(p.desa || '-') + '</td>' +
-          '<td>' + AppBerkas.badge(p.status) + '</td>' +
+          '<td>' + AppBerkas.badge(p.status) + AppBerkas.badgeDuplikat(p) + '</td>' +
           '<td>' + (p.tgl_diajukan ? fmtTglShort(p.tgl_diajukan) : '-') + '</td>' +
           '<td>' + (p.alasan ? '<span class="alasan" title="' + esc(p.alasan) + '">' + esc(p.alasan) + '</span>' : '-') + '</td>' +
           '<td><div class="actions">' + aksi + '</div></td>' +
@@ -616,7 +629,7 @@
         '<td><strong>' + esc(p.nama) + '</strong></td>' +
         '<td>' + esc(p.nik) + '</td>' +
         '<td>' + esc(p.desa || '-') + '</td>' +
-        '<td>' + AppBerkas.badge(p.status) + '</td>' +
+        '<td>' + AppBerkas.badge(p.status) + AppBerkas.badgeDuplikat(p) + '</td>' +
         '<td>' + (p.tgl_diajukan ? fmtTglShort(p.tgl_diajukan) : '-') + '</td>' +
         '<td>' + (p.alasan ? '<span class="alasan" title="' + esc(p.alasan) + '">' + esc(p.alasan) + '</span>' : '-') + '</td>' +
         '<td><div class="actions">' + aksi + '</div></td>' +
@@ -738,6 +751,11 @@
         return;
       }
       if (act === 'info-lock') { openUsulanWarning('batas', null); return; }
+      if (act === 'info-duplikat') {
+        var pdup = pengajuanRows.filter(function (x) { return String(x.id) === String(id); })[0];
+        if (pdup) openUsulanWarning('duplikat', { nama: pdup.nama, nik: pdup.nik, no_kk: pdup.no_kk });
+        return;
+      }
       if (act === 'ajukan') {
         var pj = pengajuanRows.filter(function (x) { return String(x.id) === String(id); })[0];
         if (!pj) return;
