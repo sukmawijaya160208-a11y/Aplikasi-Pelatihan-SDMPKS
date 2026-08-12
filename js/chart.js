@@ -18,31 +18,47 @@
     draw: function (stats) {
       if (!window.Chart) return;
       stats = stats || {};
-      var pria = stats.pria || 0;
-      var wanita = stats.wanita || 0;
       var bulanan = {};
       (stats.bulanan || []).forEach(function (b) { bulanan[b.bulan] = Number(b.n) || 0; });
 
       var ctx1 = document.getElementById('chartJK');
       if (ctx1) {
         if (window._chartJK) window._chartJK.destroy();
-        window._chartJK = new Chart(ctx1, {
-          type: 'pie',
-          data: {
-            labels: ['LAKI-LAKI', 'PEREMPUAN'],
-            datasets: [{
-              data: [pria, wanita],
-              backgroundColor: ['#0f7a54', '#f59e0b'],
-              borderColor: '#fff',
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 14, padding: 16, font: { size: 12, weight: '600' } } } }
-          }
-        });
+        var empty1 = document.getElementById('chartJKEmpty');
+        var pel = stats.per_pelatihan || [];
+        var isEmpty = !pel.length;
+        if (empty1) empty1.hidden = !isEmpty;
+        ctx1.style.display = isEmpty ? 'none' : 'block';
+        if (!isEmpty) {
+          var PALET = ['#0f7a54', '#16a34a', '#f59e0b', '#6366f1', '#0ea5e9', '#ef4444', '#9333ea', '#d97706'];
+          var labels = pel.map(function (x) { return x.jenis_pelatihan || '-'; });
+          window._chartJK = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Peserta',
+                data: pel.map(function (x) { return Number(x.n) || 0; }),
+                backgroundColor: labels.map(function (_, i) { return PALET[i % PALET.length]; }),
+                borderRadius: 6,
+                maxBarThickness: 30
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: function (c) { return ' ' + c.parsed.x + ' orang'; } } }
+              },
+              scales: {
+                x: { beginAtZero: true, ticks: { precision: 0, font: { size: 11 } }, grid: { color: '#eef2f1' } },
+                y: { ticks: { font: { size: 11, weight: '600' } }, grid: { display: false } }
+              }
+            }
+          });
+        }
       }
 
       var ctx2 = document.getElementById('chartBulan');

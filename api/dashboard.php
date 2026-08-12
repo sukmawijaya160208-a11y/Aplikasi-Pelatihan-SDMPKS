@@ -36,6 +36,13 @@ if ($u['role'] === 'lembaga') {
     $st->execute([$lid]);
     $out['stats']['surat'] = (int)$st->fetch()['n'];
 
+    $st = pdo()->prepare('SELECT jenis_pelatihan, COUNT(*) AS n FROM pekebun WHERE lembaga_id = ? AND jenis_pelatihan <> "" GROUP BY jenis_pelatihan ORDER BY n DESC');
+    $st->execute([$lid]);
+    $out['stats']['per_pelatihan'] = array_map(function ($r) {
+        $r['n'] = (int)$r['n'];
+        return $r;
+    }, $st->fetchAll());
+
     $st = pdo()->prepare('SELECT * FROM pekebun WHERE lembaga_id = ? ORDER BY id DESC LIMIT 5');
     $st->execute([$lid]);
     $out['recent'] = $st->fetchAll();
@@ -70,6 +77,10 @@ if ($u['role'] === 'lembaga') {
     ];
     $out['stats']['lembaga'] = (int)pdo()->query('SELECT COUNT(*) FROM lembaga')->fetchColumn();
     $out['stats']['surat'] = (int)pdo()->query('SELECT COUNT(*) FROM surat')->fetchColumn();
+    $out['stats']['per_pelatihan'] = array_map(function ($r) {
+        $r['n'] = (int)$r['n'];
+        return $r;
+    }, pdo()->query('SELECT jenis_pelatihan, COUNT(*) AS n FROM pekebun WHERE jenis_pelatihan <> "" GROUP BY jenis_pelatihan ORDER BY n DESC')->fetchAll());
     if ($u['role'] === 'admin') {
         $out['stats']['akun'] = (int)pdo()->query('SELECT COUNT(*) FROM users')->fetchColumn();
     }
