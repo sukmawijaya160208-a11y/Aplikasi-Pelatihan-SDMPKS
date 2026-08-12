@@ -14,9 +14,6 @@ backups/*.sql
 uploads/pekebun/
 !uploads/pekebun/.htaccess
 
-# Data pribadi (bukti donasi) - tidak dipublikasikan
-assets/img/bukti-donasi.png
-
 # Sampah OS / editor
 Thumbs.db
 Desktop.ini
