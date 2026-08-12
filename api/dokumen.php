@@ -65,21 +65,56 @@ if ($act === 'upload') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_err('Metode tidak diizinkan.', 405);
     can_edit_dokumen((int)($_POST['pekebun_id'] ?? $_GET['pekebun_id'] ?? 0));
 
-    if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
-        json_err('Gagal mengunggah file. Coba lagi.');
+    $UPLOAD_ERR_MSG = [
+        UPLOAD_ERR_INI_SIZE   => 'File melebihi batas upload_max_filesize server (' . ini_get('upload_max_filesize') . '). Dokumen pekebun maksimal 5 MB.',
+        UPLOAD_ERR_FORM_SIZE  => 'File melebihi batas ukuran yang ditentukan.',
+        UPLOAD_ERR_PARTIAL    => 'File hanya terunggah sebagian. Silakan coba lagi.',
+        UPLOAD_ERR_NO_FILE    => 'Tidak ada file yang dipilih.',
+        UPLOAD_ERR_NO_TMP_DIR => 'Folder temporer unggahan server tidak tersedia.',
+        UPLOAD_ERR_CANT_WRITE => 'Server tidak dapat menulis file unggahan (izin folder). Hubungi administrator.',
+        UPLOAD_ERR_EXTENSION  => 'Ekstensi PHP memblokir unggahan file ini.',
+    ];
+
+    if (empty($_FILES)) {
+        error_log('[SDMPKS upload] $_FILES kosong: file_uploads=' . ini_get('file_uploads')
+            . ', upload_max_filesize=' . ini_get('upload_max_filesize')
+            . ', post_max_size=' . ini_get('post_max_size')
+            . ', tmp=' . sys_get_temp_dir() . ', CL=' . ($_SERVER['CONTENT_LENGTH'] ?? '-'));
+        json_err(
+            'Server tidak menerima file unggahan. Penyebab umum: ukuran file melebihi batas server (post_max_size='
+            . ini_get('post_max_size') . ') atau unggahan file dinonaktifkan. Coba file yang lebih kecil dan hubungi administrator bila tetap gagal.',
+            422,
+            'upload_no_files'
+        );
     }
+    if (empty($_FILES['file'])) {
+        json_err('Field file tidak ditemukan pada request unggahan.', 422, 'upload_no_field');
+    }
+
     $f = $_FILES['file'];
+    if ($f['error'] !== UPLOAD_ERR_OK) {
+        error_log('[SDMPKS upload] error=' . $f['error'] . ' size=' . $f['size'] . ' name=' . $f['name']);
+        json_err(
+            $UPLOAD_ERR_MSG[$f['error']] ?? ('Kode kesalahan unggahan server: ' . $f['error'] . '. Hubungi administrator.'),
+            422,
+            'upload_err_' . $f['error']
+        );
+    }
     if ($f['size'] <= 0) json_err('File kosong.');
-    if ($f['size'] > MAX_UPLOAD) json_err('Ukuran file maksimal 5 MB.');
+    if ($f['size'] > MAX_UPLOAD) json_err('Ukuran file maksimal 5 MB.', 422, 'upload_too_large');
 
     $ext = strtolower(pathinfo((string)$f['name'], PATHINFO_EXTENSION));
     $mime = '';
     if (function_exists('finfo_open')) {
         $mime = (string)finfo_file(finfo_open(FILEINFO_MIME_TYPE), $f['tmp_name']);
     }
-    if ($ext !== 'pdf' || !in_array($mime, ['application/pdf', 'application/x-pdf'], true)) {
+    $head = file_get_contents($f['tmp_name'], false, null, 0, 5);
+    $isPdfMagic = $head !== false && strncmp($head, '%PDF-', 5) === 0;
+    $mimeOk = in_array($mime, ['application/pdf', 'application/x-pdf'], true);
+    if ($ext !== 'pdf' || ($mime === '' && !$isPdfMagic) || ($mime !== '' && !$mimeOk && !$isPdfMagic)) {
         json_err('Hanya file PDF yang diperbolehkan.');
     }
+    if (empty($mime)) $mime = 'application/pdf';
 
     $pekebunId = (int)($_POST['pekebun_id'] ?? $_GET['pekebun_id'] ?? 0);
     $dir = __DIR__ . '/../uploads/pekebun/' . $pekebunId;

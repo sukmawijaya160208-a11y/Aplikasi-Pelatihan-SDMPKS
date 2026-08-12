@@ -977,12 +977,14 @@
     var fileDokumen = document.getElementById('fileDokumen');
 
     function uploadDokumen(file) {
-      if (!file || file.type !== 'application/pdf') {
+      if (!file) return;
+      var isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+      if (!isPdf) {
         AppToast('Hanya file PDF yang diperbolehkan.', 'error');
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        AppToast('Ukuran file maksimal 10 MB.', 'error');
+        AppToast('Ukuran file maksimal 5 MB.', 'error');
         return;
       }
       AppDokumen.upload(file, dokumenId).then(function () {
