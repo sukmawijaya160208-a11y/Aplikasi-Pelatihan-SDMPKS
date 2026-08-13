@@ -294,6 +294,41 @@ Kredensial DB container ada di `deploy/.env` (chmod 600). Update manual: `cd /va
 ### Keamanan & catatan penting
 
 - Port `8080` hanya `127.0.0.1` (publish bind di `docker-compose.yml`); akses publik hanya lewat `https://aplikasisdmpksa.online`.
-- `sdmpks-nginx` menumpang `kud_kud-network` (external) ? jangan hapus network ini.
-- Jika project KUD `git pull` menimpa `kud-nginx.conf`, guard memulihkan otomatis ?5 menit.
+- `sdmpks-nginx` menumpang `kud_kud-network` (external) → jangan hapus network ini. Network ini juga dipakai project KUD — nama container `app` BENTROK dengan `wpg-app` di network itu, maka `docker/nginx.conf` memakai `fastcgi_pass sdmpks-app:9000` (nama unik). JANGAN dikembalikan ke `app:9000`.
+- Jika project KUD `git pull` menimpa `kud-nginx.conf`, guard memulihkan otomatis ≤5 menit.
 - Uji sebelum push (laptop): jalankan 4 suite test, wajib `TOTAL-FAIL = 0` (lihat `run-tests.cmd` + pre-push hook lint).
+
+### Catatan operasional (13 Agt 2026) — upload & 502
+
+- Batas upload diatur lewat file ini PHP container: `docker/app/99-sdmpks.ini` (upload_max_filesize=20M, post_max_size=24M, memory_limit=256M, max_execution_time=120), di-mount sebagai volume di `docker-compose.yml`. JANGAN set lewat `fastcgi_param PHP_VALUE` di nginx — FPM memparse nilai multi-direktif dengan spasi sebagai satu string, yang membuat `upload_max_filesize` berisi nilai sampah (ini penyebab error "File melebihi batas upload_max_filesize server (12M post_max_size...)").
+- Setelah recreate `sdmpks-app` lewat compose, `sdmpks-nginx` otomatis ke-attach kembali ke `kud_kud-network` bila dipulihkan guard; jika `nginx` kehilangan akses ke `app`, cek `docker exec sdmpks-nginx getent hosts sdmpks-app` (harus 172.16.2.x) lalu `docker exec sdmpks-nginx nginx -s reload`.
+- PENTING bind-mount: `sed -i` pada file yang di-mount (`docker/nginx.conf`, `docker-compose.yml`) mengganti inode file, sehingga isi di dalam container TIDAK ter-update walau direload. Setelah mengedit file di `docker/`, WAJIB `docker restart sdmpks-nginx` (atau `docker compose up -d --no-deps nginx`) agar bind-mount me-re-read file baru.
+- Verifikasi cepat setelah perubahan: `curl -s https://aplikasisdmpksa.online/` harus 200, dan log `docker logs sdmpks-app` bebas `Warning`/`error` PHP.
+
+---
+
+## Pengembangan Lokal (Laptop) — MCP & Skills OpenCode
+
+Project ini sudah membawa konfigurasi MCP dan skills untuk OpenCode agar langsung terpakai di laptop baru (tinggal clone repo).
+
+### Yang ada di repo
+
+- **`opencode.json`** — daftar MCP server project: `context7` (dokumentasi library), `gh_grep`, `git`, `fetch`, `memory`, `sequential-thinking`, `time`, `mysql` (XAMPP local), `github`, `browser`.
+- **`.opencode/skills/`** — skills yang tersalin dari laptop lama: ui-ux-pro-max, ui-styling, design, design-system, banner-design, brand, browser, slides, verify, legacy-decoder, write-tech-spec, create-issues, implement-task, find-skills.
+
+### Setup di laptop baru (sekali saja)
+
+1. Instal OpenCode + Node.js (npx), lalu clone repo:
+   `git clone https://github.com/sukmawijaya160208-a11y/Aplikasi-Pelatihan-SDMPKS.git`
+2. Set env var untuk MCP yang butuh kredensial (JANGAN commit nilai asli ke repo publik):
+   - `CONTEXT7_API_KEY` — key Context7 dari laptop lama
+   - `GITHUB_PERSONAL_ACCESS_TOKEN` — token GitHub
+   - `MYSQL_HOST=127.0.0.1`, `MYSQL_PORT=3306`, `MYSQL_USER=root`, `MYSQL_PASS=` (XAMPP default kosong), `MYSQL_DB=sdmpks_db`
+   (Windows: `setx NAMA "nilai"`; Linux/Mac: `export NAMA=...` di `~/.bashrc`)
+3. Buka `opencode` di folder project.
+
+> Key API dipakai lewat placeholder `{env:...}` di `opencode.json` — sengaja TIDAK ditulis literal karena repo ini publik di GitHub. Nilai asli ada di config global laptop lama: `~/.config/opencode/opencode.json`.
+
+### Skill global yang tidak ikut repo
+
+Skill personal/global tidak disalin: `21st-*` (React UI), `learn`/`agentskill-*` (manajemen skill), `threejs-animation`, `context7-mcp`. Bila mau, salin manual ke `.opencode/skills/`.

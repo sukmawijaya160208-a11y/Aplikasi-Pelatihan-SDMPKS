@@ -24,3 +24,7 @@ node_modules/
 
 # Artefak uji otomatis
 *.cjs.dbg
+
+# Cache Python dari skill opencode
+__pycache__/
+*.pyc

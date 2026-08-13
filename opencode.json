@@ -1,0 +1,77 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true,
+      "headers": {
+        "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
+      }
+    },
+    "gh_grep": {
+      "type": "remote",
+      "url": "https://mcp.grep.app",
+      "enabled": true
+    },
+    "git": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "mcp-server-git"],
+      "enabled": true
+    },
+    "fetch": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "enabled": true
+    },
+    "memory": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "enabled": true
+    },
+    "time": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-time", "--local-timezone=Asia/Jakarta"],
+      "enabled": true
+    },
+    "mysql": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@benborla29/mcp-server-mysql"],
+      "enabled": true,
+      "environment": {
+        "MYSQL_HOST": "{env:MYSQL_HOST}",
+        "MYSQL_PORT": "{env:MYSQL_PORT}",
+        "MYSQL_USER": "{env:MYSQL_USER}",
+        "MYSQL_PASS": "{env:MYSQL_PASS}",
+        "MYSQL_DB": "{env:MYSQL_DB}"
+      }
+    },
+    "github": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "enabled": true,
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "browser": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-browser"],
+      "enabled": true
+    }
+  },
+  "plugin": ["opencode-mem", "superpowers"]
+}
