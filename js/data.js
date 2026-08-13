@@ -159,7 +159,7 @@
     { page: 'data', label: 'Input Data', roles: ['admin', 'lembaga'] },
     { page: 'surat', label: 'Surat-Surat', roles: ['admin', 'lembaga'] },
     { page: 'cetak', label: 'Cetak', roles: ['admin', 'lembaga'] },
-    { page: 'pengajuan', label: 'Pengajuan Berkas', roles: ['lembaga'] },
+    { page: 'pengajuan', label: 'Pengajuan Berkas', roles: ['lembaga', 'admin'] },
     { page: 'usulan', label: 'Usulan Kelembagaan', roles: ['admin', 'dinas'] },
     { page: 'lembaga', label: 'Kelembagaan', roles: ['admin'] },
     { page: 'akun', label: 'Akun Pengguna', roles: ['admin'] },

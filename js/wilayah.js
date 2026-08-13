@@ -8,6 +8,8 @@
 
   window.AppWilayah = {
     OPSI_PELATIHAN: [
+      'Penguatan Kelembagaan',
+      'Manajemen dan Administrasi Keuangan',
       'Budidaya Kelapa Sawit',
       'Panen dan Pascapanen',
       'Implementasi ISPO',

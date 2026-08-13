@@ -55,9 +55,32 @@
 
   /* ============ AppDokumen : Dokumen (PDF) Pekebun ============ */
   var docCache = {};
+  var uploadLimits = null;
+
+  function mb(n) {
+    return Math.max(1, Math.round(n / 1048576 * 10) / 10);
+  }
 
   window.AppDokumen = {
     MAX_MB: 5,
+    limits: function (force) {
+      if (uploadLimits && !force) return Promise.resolve(uploadLimits);
+      return Api.get('sysinfo.php', 'upload_limits').then(function (j) {
+        uploadLimits = j || null;
+        return uploadLimits;
+      }).catch(function () {
+        uploadLimits = null;
+        return null;
+      });
+    },
+    effectiveMax: function () {
+      if (!uploadLimits) return 5 * 1024 * 1024;
+      var up = uploadLimits.upload_max_filesize_byte || 0;
+      var post = uploadLimits.post_max_size_byte || 0;
+      var a = up > 0 ? up : Infinity;
+      var b = post > 768 * 1024 ? post - 512 * 1024 : post;
+      return Math.min(5 * 1024 * 1024, a, b > 0 ? b : Infinity);
+    },
     url: function (id) {
       return 'api/dokumen.php?act=download&id=' + encodeURIComponent(id);
     },
@@ -74,9 +97,21 @@
       return AppDokumen.list(pekebunId).then(function (rows) { return rows.length; });
     },
     upload: function (file, pekebunId) {
-      return Api.upload('dokumen.php', 'upload', { pekebun_id: pekebunId, file: file }).then(function (j) {
-        docCache[pekebunId] = undefined;
-        return j;
+      return AppDokumen.limits().then(function (lim) {
+        var cap = AppDokumen.effectiveMax();
+        if (file && file.size > cap) {
+          var up = lim ? lim.upload_max_filesize : '';
+          var po = lim ? lim.post_max_size : '';
+          throw new Error(
+            'Batas unggah efektif server saat ini ' + mb(cap) + ' MB (upload_max_filesize=' + up +
+            ', post_max_size=' + po + '). File ' + mb(file.size) + ' MB melebihi batas tersebut. ' +
+            'Minta administrator menaikkan upload_max_filesize dan post_max_size di php.ini / panel hosting.'
+          );
+        }
+        return Api.upload('dokumen.php', 'upload', { pekebun_id: pekebunId, file: file }).then(function (j) {
+          docCache[pekebunId] = undefined;
+          return j;
+        });
       });
     },
     hapus: function (id, pekebunId) {

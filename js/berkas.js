@@ -331,23 +331,31 @@
     renderVerifDocs(editable);
   }
 
-  /* ============ PENGAJUAN (lembaga) ============ */
+  /* ============ PENGAJUAN (lembaga / admin) ============ */
   var filterPengajuan = '';
+  var filterPengajuanPelatihan = '';
   var pengajuanRows = [];
 
   function pengajuanFiltered() {
     return pengajuanRows.filter(function (p) {
-      return !filterPengajuan || p.status === filterPengajuan;
+      if (filterPengajuan && p.status !== filterPengajuan) return false;
+      if (filterPengajuanPelatihan) {
+        var v = (p.jenis_pelatihan || '').trim();
+        if (filterPengajuanPelatihan === '__BELUM__') { if (v !== '') return false; }
+        else if (v !== filterPengajuanPelatihan) return false;
+      }
+      return true;
     });
   }
 
   function renderPengajuan() {
     var rows = pengajuanFiltered();
     var terkunci = !!(usBatas && usBatas.terkunci);
+    var isAdmin = AppAuth.isAdmin();
     var tb = document.getElementById('tbodyPengajuan');
     document.getElementById('countPengajuan').textContent = rows.length;
     if (!rows.length) {
-      tb.innerHTML = '<tr class="empty-row"><td colspan="8">Belum ada berkas. Input data pekebun lalu ajukan verifikasi.</td></tr>';
+      tb.innerHTML = '<tr class="empty-row"><td colspan="' + (isAdmin ? 9 : 8) + '">Belum ada berkas. Input data pekebun lalu ajukan verifikasi.</td></tr>';
       return;
     }
     tb.innerHTML = rows.map(function (p, i) {
@@ -399,6 +407,15 @@
     }
     Api.get('berkas.php', 'list').then(function (j) {
       pengajuanRows = j.rows || [];
+      var selPj = document.getElementById('filterPengajuanPelatihan');
+      if (selPj) {
+        var optsPj = '<option value="">Semua Jenis Pelatihan</option>';
+        (window.AppWilayah ? AppWilayah.OPSI_PELATIHAN : []).forEach(function (o) {
+          optsPj += '<option value="' + esc(o) + '"' + (filterPengajuanPelatihan === o ? ' selected' : '') + '>' + esc(o) + '</option>';
+        });
+        optsPj += '<option value="__BELUM__"' + (filterPengajuanPelatihan === '__BELUM__' ? ' selected' : '') + '>Belum Diisi</option>';
+        selPj.innerHTML = optsPj;
+      }
       renderPengajuan();
     }).catch(function (e) {
       tb.innerHTML = '<tr class="empty-row"><td colspan="8">Gagal memuat data.</td></tr>';
@@ -449,16 +466,25 @@
   function exportPengajuanExcel() {
     var rows = pengajuanFiltered();
     if (!rows.length) { AppToast('Tidak ada data untuk diunduh.', 'warn'); return; }
+    var isAdmin = AppAuth.isAdmin();
     window.loadExcelLib().then(function () {
-    var aoa = [['No', 'Nama', 'NIK', 'No. KK', 'Jenis Kelamin', 'Tempat Lahir', 'Tgl Lahir', 'Jenis Pelatihan', 'Jalur', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Desa', 'No. HP']];
+    var aoa = [['No', (isAdmin ? 'Kelembagaan' : null), 'Nama', 'NIK', 'No. KK', 'Jenis Kelamin', 'Tempat Lahir', 'Tgl Lahir', 'Jenis Pelatihan', 'Jalur', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Desa', 'No. HP'].filter(Boolean)];
     rows.forEach(function (p, i) {
-      aoa.push([i + 1, p.nama, p.nik, p.no_kk || '', p.jk, p.tempat_lahir || '', p.tanggal_lahir ? window.fmtTanggal(p.tanggal_lahir) : '', p.jenis_pelatihan || '', p.jalur || '', p.provinsi || '', p.kabupaten || '', p.kecamatan || '', p.desa || '', p.hp]);
+      var r = [i + 1];
+      if (isAdmin) r.push(p.lembaga_nama || '');
+      r.push(p.nama, p.nik, p.no_kk || '', p.jk, p.tempat_lahir || '', p.tanggal_lahir ? window.fmtTanggal(p.tanggal_lahir) : '', p.jenis_pelatihan || '', p.jalur || '', p.provinsi || '', p.kabupaten || '', p.kecamatan || '', p.desa || '', p.hp);
+      aoa.push(r);
     });
     var ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = [{ wch: 5 }, { wch: 25 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 14 }, { wch: 13 }, { wch: 20 }, { wch: 12 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 16 }];
+    var colW = [5];
+    if (isAdmin) colW.push(26);
+    colW = colW.concat([25, 18, 18, 14, 14, 13, 20, 12, 18, 22, 16, 18, 16]);
+    ws['!cols'] = colW.map(function (w) { return { wch: w }; });
     var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Data Pengajuan');
-    XLSX.writeFile(wb, 'Data_Pengajuan_' + window.yymmdd() + '.xlsx');
+    var namaSheet = filterPengajuanPelatihan ? (filterPengajuanPelatihan === '__BELUM__' ? 'Belum Diisi' : filterPengajuanPelatihan) : 'Data Pengajuan';
+    XLSX.utils.book_append_sheet(wb, ws, namaSheet.substring(0, 31));
+    var fPart = filterPengajuanPelatihan ? (filterPengajuanPelatihan === '__BELUM__' ? 'Belum_Diisi' : filterPengajuanPelatihan.replace(/[^\w]+/g, '_')) : '';
+    XLSX.writeFile(wb, 'Data_Pengajuan' + (fPart ? '_' + fPart : '') + '_' + window.yymmdd() + '.xlsx');
     AppToast('Data pengajuan berhasil diunduh sebagai Excel.');
     }).catch(function () {
       AppToast('Library Excel tidak termuat. Periksa koneksi internet.', 'error');
@@ -575,16 +601,17 @@
           aksi = '<button class="btn btn-xs btn-primary" data-act="edit" data-id="' + p.id + '">Edit</button>' +
             '<button class="btn btn-xs btn-danger" data-act="hapus" data-id="' + p.id + '">Hapus</button>' + aksi;
         }
-        return '<tr>' +
-          '<td>' + (i + 1) + '</td>' +
-          '<td><strong>' + esc(p.nama) + '</strong></td>' +
-          '<td>' + esc(p.nik) + '</td>' +
-          '<td>' + esc(p.desa || '-') + '</td>' +
-          '<td>' + AppBerkas.badge(p.status) + AppBerkas.badgeDuplikat(p) + '</td>' +
-          '<td>' + (p.tgl_diajukan ? fmtTglShort(p.tgl_diajukan) : '-') + '</td>' +
-          '<td>' + (p.alasan ? '<span class="alasan" title="' + esc(p.alasan) + '">' + esc(p.alasan) + '</span>' : '-') + '</td>' +
-          '<td><div class="actions">' + aksi + '</div></td>' +
-          '</tr>';
+return '<tr>' +
+        '<td>' + (i + 1) + '</td>' +
+        (isAdmin ? '<td>' + esc(p.lembaga_nama || '-') + '</td>' : '') +
+        '<td><strong>' + esc(p.nama) + '</strong></td>' +
+        '<td>' + esc(p.nik) + '</td>' +
+        '<td>' + esc(p.desa || '-') + '</td>' +
+        '<td>' + AppBerkas.badge(p.status) + AppBerkas.badgeDuplikat(p) + '</td>' +
+        '<td>' + (p.tgl_diajukan ? fmtTglShort(p.tgl_diajukan) : '-') + '</td>' +
+        '<td>' + (p.alasan ? '<span class="alasan" title="' + esc(p.alasan) + '">' + esc(p.alasan) + '</span>' : '-') + '</td>' +
+        '<td><div class="actions">' + aksi + '</div></td>' +
+        '</tr>';
       }).join('') : '<tr class="empty-row"><td colspan="8">Tidak ada data pada filter ini.</td></tr>';
       return '<div class="us-group">' +
         '<div class="us-group-head">' +
@@ -747,6 +774,12 @@
     if (document.getElementById('filterPengajuan')) {
       document.getElementById('filterPengajuan').addEventListener('change', function () {
         filterPengajuan = this.value;
+        renderPengajuan();
+      });
+    }
+    if (document.getElementById('filterPengajuanPelatihan')) {
+      document.getElementById('filterPengajuanPelatihan').addEventListener('change', function () {
+        filterPengajuanPelatihan = this.value;
         renderPengajuan();
       });
     }

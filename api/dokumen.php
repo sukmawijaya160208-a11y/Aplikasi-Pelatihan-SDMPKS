@@ -63,10 +63,25 @@ if ($act === 'list') {
 
 if ($act === 'upload') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_err('Metode tidak diizinkan.', 405);
+
+    // PHP membuang isi body bila lebih besar dari post_max_size -> $_POST & $_FILES kosong.
+    // Deteksi dini sebelum validasi lain agar penyebabnya jelas.
+    $cl = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+    if ($cl > 0 && empty($_POST) && empty($_FILES)) {
+        error_log('[SDMPKS upload] body ditolak PHP: content_length=' . $cl . ', post_max_size=' . ini_get('post_max_size'));
+        json_err(
+            'Permintaan unggahan (' . round($cl / 1048576, 1) . ' MB) melebihi batas post_max_size server ('
+            . ini_get('post_max_size') . '). Minta administrator menaikkan post_max_size dan upload_max_filesize '
+            . '(min. 20M/24M) di php.ini / panel hosting.',
+            422,
+            'upload_body_too_large'
+        );
+    }
+
     can_edit_dokumen((int)($_POST['pekebun_id'] ?? $_GET['pekebun_id'] ?? 0));
 
     $UPLOAD_ERR_MSG = [
-        UPLOAD_ERR_INI_SIZE   => 'File melebihi batas upload_max_filesize server (' . ini_get('upload_max_filesize') . '). Dokumen pekebun maksimal 5 MB.',
+        UPLOAD_ERR_INI_SIZE   => 'File melebihi batas upload_max_filesize server (' . ini_get('upload_max_filesize') . '; post_max_size=' . ini_get('post_max_size') . '). PHP menolak bila body lebih besar dari post_max_size. Minta administrator menaikkan upload_max_filesize DAN post_max_size (min. 20M) di php.ini / panel hosting. Dokumen pekebun maksimal 5 MB.',
         UPLOAD_ERR_FORM_SIZE  => 'File melebihi batas ukuran yang ditentukan.',
         UPLOAD_ERR_PARTIAL    => 'File hanya terunggah sebagian. Silakan coba lagi.',
         UPLOAD_ERR_NO_FILE    => 'Tidak ada file yang dipilih.',

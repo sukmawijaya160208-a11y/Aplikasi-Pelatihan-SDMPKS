@@ -13,3 +13,32 @@
 </IfModule>
 
 Options -Indexes
+
+# ============================================================
+# SDMPKS - Batas unggah dokumen
+# Berlaku hanya bila PHP berjalan sebagai modul Apache
+# (mod_php). Aman diabaikan pada server PHP-FPM/nginx;
+# untuk server tersebut naikkan di php.ini (upload_max_filesize,
+# post_max_size) dan client_max_body_size di konfigurasi nginx.
+# ============================================================
+<IfModule mod_php8.c>
+  php_value upload_max_filesize 20M
+  php_value post_max_size 24M
+  php_value max_file_uploads 20
+  php_value display_errors 0
+  php_value log_errors 1
+</IfModule>
+<IfModule mod_php7.c>
+  php_value upload_max_filesize 20M
+  php_value post_max_size 24M
+  php_value max_file_uploads 20
+  php_value display_errors 0
+  php_value log_errors 1
+</IfModule>
+<IfModule mod_php.c>
+  php_value upload_max_filesize 20M
+  php_value post_max_size 24M
+  php_value max_file_uploads 20
+  php_value display_errors 0
+  php_value log_errors 1
+</IfModule>

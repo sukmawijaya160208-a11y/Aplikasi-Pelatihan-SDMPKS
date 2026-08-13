@@ -16,13 +16,24 @@
   }
 
   function handle(resp) {
+    if (resp.status === 401 && fileOf(resp.url) !== 'auth.php') {
+      window.location.href = 'index.html';
+      return Promise.reject(new Error('Sesi berakhir.'));
+    }
+    var ct = (resp.headers.get('content-type') || '').toLowerCase();
+    if (ct.indexOf('application/json') === -1) {
+      var m = resp.status === 413
+        ? 'Server menolak permintaan (HTTP 413). Ukuran request melebihi batas web server/proxy (mis. client_max_body_size nginx / LimitRequestBody Apache).'
+        : 'Tanggapan server tidak valid (HTTP ' + resp.status + ' — bukan JSON). ' +
+          (resp.status >= 500 ? 'Terjadi kesalahan server. Hubungi administrator.' : 'Coba lagi.');
+      console.error('[SDMPKS] Respons non-JSON', resp.status, resp.url);
+      var err = new Error(m);
+      err.status = resp.status;
+      return Promise.reject(err);
+    }
     return resp.json().then(function (j) {
       if (!j || j.ok === false) {
         var msg = (j && j.error) || 'Terjadi kesalahan pada server.';
-        if (resp.status === 401 && fileOf(resp.url) !== 'auth.php') {
-          window.location.href = 'index.html';
-          return Promise.reject(new Error('Sesi berakhir.'));
-        }
         var err = new Error(msg);
         err.status = resp.status;
         err.code = (j && j.code) || '';
@@ -30,6 +41,11 @@
         return Promise.reject(err);
       }
       return j;
+    }).catch(function (e) {
+      console.error('[SDMPKS] Gagal parsing JSON', resp.status, resp.url, e);
+      var err = new Error('Tanggapan server tidak valid (HTTP ' + resp.status + '). Hubungi administrator bila berlanjut.');
+      err.status = resp.status;
+      return Promise.reject(err);
     });
   }
 
