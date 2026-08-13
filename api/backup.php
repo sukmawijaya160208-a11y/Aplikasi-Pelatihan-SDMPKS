@@ -267,6 +267,73 @@ function bk_le_restore(array $d, int $lembagaId): array
 }
 
 /* ============================================================
+   Restart Data: kosongkan data pekebun
+   Admin   : seluruh pekebun dari semua kelembagaan
+   Lembaga : pekebun milik kelembagaan sendiri
+   ============================================================ */
+
+function bk_reset_counts(?int $lembagaId): array
+{
+    $pdo = pdo();
+    $where = $lembagaId === null ? '1=1' : 'lembaga_id = ' . (int)$lembagaId;
+    $ids = array_map('intval', $pdo->query("SELECT id FROM pekebun WHERE $where")->fetchAll(PDO::FETCH_COLUMN));
+    $nDok = 0;
+    if ($ids) {
+        $in = implode(',', $ids);
+        $nDok = (int)$pdo->query("SELECT COUNT(*) FROM dokumen WHERE pekebun_id IN ($in)")->fetchColumn();
+    }
+    if ($lembagaId !== null) {
+        $st = $pdo->prepare('SELECT COUNT(*) FROM surat WHERE pekebun_id IS NOT NULL AND lembaga_id = ?');
+        $st->execute([$lembagaId]);
+    } else {
+        $st = $pdo->query('SELECT COUNT(*) FROM surat WHERE pekebun_id IS NOT NULL');
+    }
+    return [
+        'ids' => $ids,
+        'pekebun' => count($ids),
+        'dokumen' => $nDok,
+        'surat' => (int)$st->fetchColumn(),
+    ];
+}
+
+function bk_reset_clear_files(array $ids): void
+{
+    foreach ($ids as $id) {
+        $dir = __DIR__ . '/../uploads/pekebun/' . (int)$id;
+        if (!is_dir($dir)) continue;
+        foreach (glob(rtrim($dir, '/') . '/*') ?: [] as $f) {
+            if (is_file($f)) @unlink($f);
+        }
+        @rmdir($dir);
+    }
+}
+
+function bk_reset_pekebun(?int $lembagaId): array
+{
+    $c = bk_reset_counts($lembagaId);
+    $pdo = pdo();
+    $pdo->beginTransaction();
+    try {
+        if ($lembagaId === null) {
+            $pdo->exec('DELETE FROM surat WHERE pekebun_id IS NOT NULL');
+            $pdo->exec('DELETE FROM pekebun'); // dokumen ikut terhapus via FK CASCADE
+        } else {
+            $st = $pdo->prepare('DELETE FROM surat WHERE lembaga_id = ? AND pekebun_id IS NOT NULL');
+            $st->execute([$lembagaId]);
+            $st = $pdo->prepare('DELETE FROM pekebun WHERE lembaga_id = ?');
+            $st->execute([$lembagaId]);
+        }
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        error_log('[backup-reset] ' . $e->getMessage());
+        json_err('Gagal mereset data pekebun. Coba lagi.', 500);
+    }
+    bk_reset_clear_files($c['ids']);
+    return ['pekebun' => $c['pekebun'], 'dokumen' => $c['dokumen'], 'surat' => $c['surat']];
+}
+
+/* ============================================================
    Routing
    ============================================================ */
 
@@ -360,6 +427,31 @@ if ($act === 'le_restore') {
     $res = bk_le_restore($d, $lid);
     $sum = $res['diimpor']['pekebun'] + $res['diimpor']['surat'] + $res['diimpor']['counters'];
     json_ok(['diimpor' => $res['diimpor'], 'dilewati' => $res['dilewati'], 'message' => $sum . ' data berhasil dipulihkan.']);
+}
+
+if ($act === 'reset_preview' || $act === 'reset') {
+    if ($u['role'] === 'admin') {
+        $lid = null;
+    } elseif ($u['role'] === 'lembaga') {
+        $lid = (int)$u['lembaga_id'];
+    } else {
+        json_err('Anda tidak memiliki izin untuk aksi ini.', 403);
+    }
+
+    if ($act === 'reset_preview') {
+        $c = bk_reset_counts($lid);
+        json_ok(['dihapus' => ['pekebun' => $c['pekebun'], 'dokumen' => $c['dokumen'], 'surat' => $c['surat']]]);
+    }
+
+    if (empty(body()['konfirmasi'])) json_err('Konfirmasi restart belum diberikan.', 400);
+    $d = bk_reset_pekebun($lid);
+    $msg = 'Data pekebun dikosongkan (' . $d['pekebun'] . ' pekebun, ' . $d['dokumen'] . ' dokumen, ' . $d['surat'] . ' surat).';
+    if ($lid === null) {
+        kirim_notifikasi('admin', 'Data pekebun di-restart', $msg, 'warning');
+    } else {
+        kirim_notifikasi_lembaga($lid, 'Data pekebun di-restart', $msg, 'warning');
+    }
+    json_ok(['dihapus' => $d, 'message' => $msg]);
 }
 
 json_err('Aksi tidak dikenali.', 404);

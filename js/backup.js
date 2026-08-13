@@ -187,6 +187,42 @@
         }).finally(function () { btnLoading(btnLeRestore, false); });
       });
     });
+  /* ---- Restart Data (admin: semua, lembaga: milik sendiri) ---- */
+  function restartData(btn, scopeText, yesLabel) {
+    if (!btn || btn.dataset.busy) return;
+    btn.dataset.busy = '1';
+    Api.get('backup.php', 'reset_preview').then(function (j) {
+      var d = j.dihapus || {};
+      var nP = Number(d.pekebun) || 0;
+      var nD = Number(d.dokumen) || 0;
+      var nS = Number(d.surat) || 0;
+      if (!nP && !nD && !nS) {
+        AppToast('Tidak ada data pekebun untuk dikosongkan.', 'info');
+        return;
+      }
+      AppConfirm('RESTART DATA — TIDAK DAPAT DIBATALKAN! ' + scopeText + ' ' + nP + ' pekebun, ' + nD + ' dokumen, dan ' + nS + ' surat akan dihapus permanen. Pastikan backup sudah dibuat sebelum melanjutkan.', function () {
+        btnLoading(btn, true);
+        Api.post('backup.php', 'reset', { konfirmasi: true }).then(function (r) {
+          AppToast(r.message || 'Data pekebun berhasil dikosongkan.', 'success');
+          setTimeout(function () { window.location.reload(); }, 1500);
+        }).catch(function (e) {
+          AppToast(e.message, 'error');
+        }).finally(function () { btnLoading(btn, false); });
+      }, { title: 'Restart Data Pekebun?', yesLabel: yesLabel });
+    }).catch(function (e) {
+      AppToast(e.message, 'error');
+    }).finally(function () { delete btn.dataset.busy; });
+  }
+
+  var btnAdminReset = el('btnBkAdminReset');
+  if (btnAdminReset) btnAdminReset.addEventListener('click', function () {
+    restartData(btnAdminReset, 'Seluruh data pekebun dari SEMUA kelembagaan akan dikosongkan:', 'Ya, Restart Semua');
+  });
+
+  var btnLeReset = el('btnBkLeReset');
+  if (btnLeReset) btnLeReset.addEventListener('click', function () {
+    restartData(btnLeReset, 'Seluruh data pekebun kelembagaan Anda akan dikosongkan:', 'Ya, Restart Data Saya');
+  });
   }
 
   window.AppPages = window.AppPages || {};
