@@ -33,13 +33,13 @@
     template: function () {
       needXlsx().then(function (ok) {
         if (!ok) return;
-      var head = ['Nama Lengkap *', 'NIK *', 'Nomor Kartu Keluarga *', 'Jenis Kelamin *', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Pelatihan *', 'Jalur *', 'Provinsi *', 'Kabupaten/Kota *', 'Kecamatan *', 'Desa/Kelurahan *', 'No. SHM', 'Luas Lahan (M2)', 'Nama Kepala Desa *', 'Nama Pemilik Sebelumnya', 'Nomor Handphone', 'Agama', 'Pekerjaan', 'Jalan, RT/RW', 'NIB', 'Status Tanah', 'Dipergunakan Untuk', 'Sebelah Utara', 'Sebelah Timur', 'Sebelah Selatan', 'Sebelah Barat', 'Tahun Menguasai', 'Perolehan Dari', 'Tahun Perolehan', 'Saksi 1 - Nama', 'Saksi 1 - Umur', 'Saksi 1 - Pekerjaan', 'Saksi 1 - Alamat', 'Saksi 2 - Nama', 'Saksi 2 - Umur', 'Saksi 2 - Pekerjaan', 'Saksi 2 - Alamat'];
+      var head = ['Nama Lengkap *', 'NIK *', 'Nomor Kartu Keluarga *', 'Jenis Kelamin *', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Pelatihan *', 'Jalur *', 'Provinsi *', 'Kabupaten/Kota *', 'Kecamatan *', 'Desa/Kelurahan *', 'No. SHM', 'Luas Lahan (M2)', 'Nama Kepala Desa *', 'Nama Pemilik Sebelumnya', 'Nomor Handphone', 'Agama', 'Pekerjaan', 'Jalan, RT/RW', 'NIB', 'Status Tanah', 'Dipergunakan Untuk', 'Sebelah Utara', 'Sebelah Timur', 'Sebelah Selatan', 'Sebelah Barat', 'Tahun Menguasai', 'Perolehan Dari', 'Tahun Perolehan', 'Saksi 1 - Nama', 'Saksi 1 - Umur', 'Saksi 1 - Pekerjaan', 'Saksi 1 - Alamat', 'Saksi 2 - Nama', 'Saksi 2 - Umur', 'Saksi 2 - Pekerjaan', 'Saksi 2 - Alamat', 'Provinsi Lokasi Lahan', 'Kabupaten/Kota Lokasi Lahan', 'Kecamatan Lokasi Lahan', 'Desa/Kelurahan Lokasi Lahan'];
       var aoa = [
         head,
-        ['PARJIMAN', '1605122712760002', '1605122701050002', 'LAKI-LAKI', 'Megang Sakti', '1976-12-27', 'Budidaya Kelapa Sawit', 'Pekebun', 'Sumatera Selatan', 'Kabupaten Musi Rawas', 'Megang Sakti', 'Tegal Sari', '', '', 'SISWOYO', '', '082227283416']
+        ['PARJIMAN', '1605122712760002', '1605122701050002', 'LAKI-LAKI', 'Megang Sakti', '1976-12-27', 'Budidaya Kelapa Sawit', 'Pekebun', 'Sumatera Selatan', 'Kabupaten Musi Rawas', 'Megang Sakti', 'Tegal Sari', '', '', 'SISWOYO', '', '082227283416', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'Sumatera Selatan', 'Kabupaten Musi Rawas', 'Megang Sakti', 'Tegal Sari']
       ];
       var ws = XLSX.utils.aoa_to_sheet(aoa);
-      ws['!cols'] = [{ wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 20 }, { wch: 12 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 16 }, { wch: 10 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 14 }, { wch: 18 }, { wch: 10 }, { wch: 14 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 14 }, { wch: 20 }];
+      ws['!cols'] = [{ wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 20 }, { wch: 12 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 16 }, { wch: 10 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 14 }, { wch: 18 }, { wch: 10 }, { wch: 14 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 14 }, { wch: 20 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 18 }];
       var wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Data Pekebun');
       XLSX.writeFile(wb, 'Template_Data_Pekebun.xlsx');
@@ -102,6 +102,10 @@
             var s2Umur = String(r[35] || '').trim();
             var s2Pekerjaan = String(r[36] || '').trim();
             var s2Alamat = String(r[37] || '').trim();
+            var lahanProvinsi = String(r[38] || '').trim();
+            var lahanKabupaten = String(r[39] || '').trim();
+            var lahanKecamatan = String(r[40] || '').trim();
+            var lahanDesa = String(r[41] || '').trim();
             if (!nama && !nik && !noKk) continue;
             if (!nama || !/^\d{16}$/.test(nik) || !/^\d{16}$/.test(noKk) ||
               (jk !== 'LAKI-LAKI' && jk !== 'PEREMPUAN') ||
@@ -109,6 +113,7 @@
             list.push({
               nama: nama, nik: nik, no_kk: noKk, jk: jk, tempat_lahir: tempatLahir, tanggal_lahir: tanggalLahir,
               jenis_pelatihan: jenisPelatihan, jalur: jalur, provinsi: provinsi, kabupaten: kabupaten, kecamatan: kecamatan, desa: desa,
+              lahan_provinsi: lahanProvinsi, lahan_kabupaten: lahanKabupaten, lahan_kecamatan: lahanKecamatan, lahan_desa: lahanDesa,
               no_shm: noShm, luas_lahan: luasLahan, kepala_desa: kepalaDesa, pemilik_sebelumnya: pemilikSebelumnya, hp: hp,
               agama: agama, pekerjaan: pekerjaan, jalan_rt_rw: jalanRtRw, nib: nib, status_tanah: statusTanah, dipergunakan: dipergunakan,
               batas_utara: batasUtara, batas_timur: batasTimur, batas_selatan: batasSelatan, batas_barat: batasBarat,
@@ -152,12 +157,12 @@
         if (!ok) return;
       var rows = window.filteredData();
       if (!rows.length) { AppToast('Tidak ada data untuk diekspor.', 'warn'); return; }
-      var aoa = [['No', 'Nama Lengkap', 'NIK', 'Nomor Kartu Keluarga', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Pelatihan', 'Jalur', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan', 'No. SHM', 'Luas Lahan (M2)', 'Nama Kepala Desa', 'Nama Pemilik Sebelumnya', 'Nomor Handphone', 'Agama', 'Pekerjaan', 'Jalan, RT/RW', 'NIB', 'Status Tanah', 'Dipergunakan Untuk', 'Sebelah Utara', 'Sebelah Timur', 'Sebelah Selatan', 'Sebelah Barat', 'Tahun Menguasai', 'Perolehan Dari', 'Tahun Perolehan', 'Saksi 1 - Nama', 'Saksi 1 - Umur', 'Saksi 1 - Pekerjaan', 'Saksi 1 - Alamat', 'Saksi 2 - Nama', 'Saksi 2 - Umur', 'Saksi 2 - Pekerjaan', 'Saksi 2 - Alamat', 'Tanggal Input']];
+      var aoa = [['No', 'Nama Lengkap', 'NIK', 'Nomor Kartu Keluarga', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Pelatihan', 'Jalur', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan', 'No. SHM', 'Luas Lahan (M2)', 'Nama Kepala Desa', 'Nama Pemilik Sebelumnya', 'Nomor Handphone', 'Agama', 'Pekerjaan', 'Jalan, RT/RW', 'NIB', 'Status Tanah', 'Dipergunakan Untuk', 'Sebelah Utara', 'Sebelah Timur', 'Sebelah Selatan', 'Sebelah Barat', 'Tahun Menguasai', 'Perolehan Dari', 'Tahun Perolehan', 'Saksi 1 - Nama', 'Saksi 1 - Umur', 'Saksi 1 - Pekerjaan', 'Saksi 1 - Alamat', 'Saksi 2 - Nama', 'Saksi 2 - Umur', 'Saksi 2 - Pekerjaan', 'Saksi 2 - Alamat', 'Tanggal Input', 'Provinsi Lokasi Lahan', 'Kabupaten/Kota Lokasi Lahan', 'Kecamatan Lokasi Lahan', 'Desa/Kelurahan Lokasi Lahan']];
       rows.forEach(function (p, i) {
-        aoa.push([i + 1, p.nama, p.nik, p.no_kk || '', p.jk, p.tempat_lahir || '', p.tanggal_lahir || '', p.jenis_pelatihan || '', p.jalur || '', p.provinsi || '', p.kabupaten || '', p.kecamatan || '', p.desa || '', p.no_shm || '', p.luas_lahan || '', p.kepala_desa || '', p.pemilik_sebelumnya || '', p.hp, p.agama || '', p.pekerjaan || '', p.jalan_rt_rw || '', p.nib || '', p.status_tanah || '', p.dipergunakan || '', p.batas_utara || '', p.batas_timur || '', p.batas_selatan || '', p.batas_barat || '', p.tahun_kuasai || '', p.perolehan_dari || '', p.perolehan_sejak || '', p.saksi1_nama || '', p.saksi1_umur || '', p.saksi1_pekerjaan || '', p.saksi1_alamat || '', p.saksi2_nama || '', p.saksi2_umur || '', p.saksi2_pekerjaan || '', p.saksi2_alamat || '', window.fmtTglShort(p.tgl_input)]);
+        aoa.push([i + 1, p.nama, p.nik, p.no_kk || '', p.jk, p.tempat_lahir || '', p.tanggal_lahir || '', p.jenis_pelatihan || '', p.jalur || '', p.provinsi || '', p.kabupaten || '', p.kecamatan || '', p.desa || '', p.no_shm || '', p.luas_lahan || '', p.kepala_desa || '', p.pemilik_sebelumnya || '', p.hp, p.agama || '', p.pekerjaan || '', p.jalan_rt_rw || '', p.nib || '', p.status_tanah || '', p.dipergunakan || '', p.batas_utara || '', p.batas_timur || '', p.batas_selatan || '', p.batas_barat || '', p.tahun_kuasai || '', p.perolehan_dari || '', p.perolehan_sejak || '', p.saksi1_nama || '', p.saksi1_umur || '', p.saksi1_pekerjaan || '', p.saksi1_alamat || '', p.saksi2_nama || '', p.saksi2_umur || '', p.saksi2_pekerjaan || '', p.saksi2_alamat || '', window.fmtTglShort(p.tgl_input), p.lahan_provinsi || '', p.lahan_kabupaten || '', p.lahan_kecamatan || '', p.lahan_desa || '']);
       });
       var ws = XLSX.utils.aoa_to_sheet(aoa);
-      ws['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 20 }, { wch: 12 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 16 }, { wch: 10 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 14 }, { wch: 18 }, { wch: 10 }, { wch: 14 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 14 }, { wch: 20 }, { wch: 14 }];
+      ws['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 20 }, { wch: 12 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 16 }, { wch: 10 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 14 }, { wch: 18 }, { wch: 10 }, { wch: 14 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 14 }, { wch: 20 }, { wch: 14 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 18 }];
       var wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Data Pekebun');
       XLSX.writeFile(wb, 'Data_Pekebun_' + window.yymmdd() + '.xlsx');

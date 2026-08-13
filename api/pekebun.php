@@ -37,6 +37,7 @@ if ($act === 'list') {
 
     $sql = 'SELECT p.id, p.lembaga_id, p.nama, p.nik, p.no_kk, p.jk, p.tempat_lahir, p.tanggal_lahir,
                    p.jenis_pelatihan, p.jalur, p.alamat, p.hp, p.desa, p.provinsi, p.kabupaten, p.kecamatan,
+                   p.lahan_provinsi, p.lahan_kabupaten, p.lahan_kecamatan, p.lahan_desa,
                    p.kepala_desa, p.agama, p.pekerjaan, p.jalan_rt_rw, p.nib, p.status_tanah, p.dipergunakan,
                    p.batas_utara, p.batas_timur, p.batas_selatan, p.batas_barat, p.tahun_kuasai, p.perolehan_dari,
                    p.perolehan_sejak, p.saksi1_nama, p.saksi1_umur, p.saksi1_pekerjaan, p.saksi1_alamat,
@@ -112,6 +113,10 @@ if ($act === 'save') {
     $kabupaten = trim((string)($d['kabupaten'] ?? ''));
     $kecamatan = trim((string)($d['kecamatan'] ?? ''));
     $desa = trim((string)($d['desa'] ?? ''));
+    $lahanProvinsi = trim((string)($d['lahan_provinsi'] ?? ''));
+    $lahanKabupaten = trim((string)($d['lahan_kabupaten'] ?? ''));
+    $lahanKecamatan = trim((string)($d['lahan_kecamatan'] ?? ''));
+    $lahanDesa = trim((string)($d['lahan_desa'] ?? ''));
     $alamat = trim((string)($d['alamat'] ?? ''));
     if ($alamat === '' && $desa !== '') {
         $parts = [];
@@ -168,9 +173,9 @@ if ($act === 'save') {
             json_err('Berkas sedang diproses (menunggu verifikasi / disetujui) dan tidak dapat diubah.');
         }
         $st = pdo()->prepare(
-            'UPDATE pekebun SET nama=?, nik=?, no_kk=?, jk=?, tempat_lahir=?, tanggal_lahir=?, jenis_pelatihan=?, jalur=?, alamat=?, hp=?, desa=?, provinsi=?, kabupaten=?, kecamatan=?, luas_lahan=?, no_shm=?, pemilik_sebelumnya=?, kepala_desa=?, agama=?, pekerjaan=?, jalan_rt_rw=?, nib=?, status_tanah=?, dipergunakan=?, batas_utara=?, batas_timur=?, batas_selatan=?, batas_barat=?, tahun_kuasai=?, perolehan_dari=?, perolehan_sejak=?, saksi1_nama=?, saksi1_umur=?, saksi1_pekerjaan=?, saksi1_alamat=?, saksi2_nama=?, saksi2_umur=?, saksi2_pekerjaan=?, saksi2_alamat=? WHERE id=?'
+            'UPDATE pekebun SET nama=?, nik=?, no_kk=?, jk=?, tempat_lahir=?, tanggal_lahir=?, jenis_pelatihan=?, jalur=?, alamat=?, hp=?, desa=?, provinsi=?, kabupaten=?, kecamatan=?, lahan_provinsi=?, lahan_kabupaten=?, lahan_kecamatan=?, lahan_desa=?, luas_lahan=?, no_shm=?, pemilik_sebelumnya=?, kepala_desa=?, agama=?, pekerjaan=?, jalan_rt_rw=?, nib=?, status_tanah=?, dipergunakan=?, batas_utara=?, batas_timur=?, batas_selatan=?, batas_barat=?, tahun_kuasai=?, perolehan_dari=?, perolehan_sejak=?, saksi1_nama=?, saksi1_umur=?, saksi1_pekerjaan=?, saksi1_alamat=?, saksi2_nama=?, saksi2_umur=?, saksi2_pekerjaan=?, saksi2_alamat=? WHERE id=?'
         );
-        $st->execute([$nama, $nik, $noKk, $jk, $tempatLahir, $tanggalLahir, $jenisPelatihan, $jalur, $alamat, $hp, $desa, $provinsi, $kabupaten, $kecamatan, $luasLahan, $noShm, $pemilikSebelumnya, $kepalaDesa, $agama, $pekerjaan, $jalanRtRw, $nib, $statusTanah, $dipergunakan, $batasUtara, $batasTimur, $batasSelatan, $batasBarat, $tahunKuasai, $perolehanDari, $perolehanSejak, $saksi1Nama, $saksi1Umur, $saksi1Pekerjaan, $saksi1Alamat, $saksi2Nama, $saksi2Umur, $saksi2Pekerjaan, $saksi2Alamat, $id]);
+        $st->execute([$nama, $nik, $noKk, $jk, $tempatLahir, $tanggalLahir, $jenisPelatihan, $jalur, $alamat, $hp, $desa, $provinsi, $kabupaten, $kecamatan, $lahanProvinsi, $lahanKabupaten, $lahanKecamatan, $lahanDesa, $luasLahan, $noShm, $pemilikSebelumnya, $kepalaDesa, $agama, $pekerjaan, $jalanRtRw, $nib, $statusTanah, $dipergunakan, $batasUtara, $batasTimur, $batasSelatan, $batasBarat, $tahunKuasai, $perolehanDari, $perolehanSejak, $saksi1Nama, $saksi1Umur, $saksi1Pekerjaan, $saksi1Alamat, $saksi2Nama, $saksi2Umur, $saksi2Pekerjaan, $saksi2Alamat, $id]);
         if ($isAdminOverride) {
             $riwayat = json_decode((string)($old['riwayat'] ?? '[]'), true) ?: [];
             $riwayat[] = ['aksi' => 'diperbarui', 'tgl' => date('Y-m-d H:i:s'), 'oleh' => $u['nama'] ?: 'Administrator'];
@@ -186,10 +191,10 @@ if ($act === 'save') {
             if ($lembagaId <= 0) json_err('Pilih kelembagaan pemilik data.');
         }
         $st = pdo()->prepare(
-            'INSERT INTO pekebun (lembaga_id, nama, nik, no_kk, jk, tempat_lahir, tanggal_lahir, jenis_pelatihan, jalur, alamat, hp, desa, provinsi, kabupaten, kecamatan, luas_lahan, no_shm, pemilik_sebelumnya, kepala_desa, agama, pekerjaan, jalan_rt_rw, nib, status_tanah, dipergunakan, batas_utara, batas_timur, batas_selatan, batas_barat, tahun_kuasai, perolehan_dari, perolehan_sejak, saksi1_nama, saksi1_umur, saksi1_pekerjaan, saksi1_alamat, saksi2_nama, saksi2_umur, saksi2_pekerjaan, saksi2_alamat)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+            'INSERT INTO pekebun (lembaga_id, nama, nik, no_kk, jk, tempat_lahir, tanggal_lahir, jenis_pelatihan, jalur, alamat, hp, desa, provinsi, kabupaten, kecamatan, lahan_provinsi, lahan_kabupaten, lahan_kecamatan, lahan_desa, luas_lahan, no_shm, pemilik_sebelumnya, kepala_desa, agama, pekerjaan, jalan_rt_rw, nib, status_tanah, dipergunakan, batas_utara, batas_timur, batas_selatan, batas_barat, tahun_kuasai, perolehan_dari, perolehan_sejak, saksi1_nama, saksi1_umur, saksi1_pekerjaan, saksi1_alamat, saksi2_nama, saksi2_umur, saksi2_pekerjaan, saksi2_alamat)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
         );
-        $st->execute([$lembagaId, $nama, $nik, $noKk, $jk, $tempatLahir, $tanggalLahir, $jenisPelatihan, $jalur, $alamat, $hp, $desa, $provinsi, $kabupaten, $kecamatan, $luasLahan, $noShm, $pemilikSebelumnya, $kepalaDesa, $agama, $pekerjaan, $jalanRtRw, $nib, $statusTanah, $dipergunakan, $batasUtara, $batasTimur, $batasSelatan, $batasBarat, $tahunKuasai, $perolehanDari, $perolehanSejak, $saksi1Nama, $saksi1Umur, $saksi1Pekerjaan, $saksi1Alamat, $saksi2Nama, $saksi2Umur, $saksi2Pekerjaan, $saksi2Alamat]);
+        $st->execute([$lembagaId, $nama, $nik, $noKk, $jk, $tempatLahir, $tanggalLahir, $jenisPelatihan, $jalur, $alamat, $hp, $desa, $provinsi, $kabupaten, $kecamatan, $lahanProvinsi, $lahanKabupaten, $lahanKecamatan, $lahanDesa, $luasLahan, $noShm, $pemilikSebelumnya, $kepalaDesa, $agama, $pekerjaan, $jalanRtRw, $nib, $statusTanah, $dipergunakan, $batasUtara, $batasTimur, $batasSelatan, $batasBarat, $tahunKuasai, $perolehanDari, $perolehanSejak, $saksi1Nama, $saksi1Umur, $saksi1Pekerjaan, $saksi1Alamat, $saksi2Nama, $saksi2Umur, $saksi2Pekerjaan, $saksi2Alamat]);
         json_ok(['id' => (int)pdo()->lastInsertId()]);
     }
 }
@@ -230,7 +235,7 @@ if ($act === 'import') {
     }
     $existing = array_flip(pdo()->query('SELECT nik FROM pekebun')->fetchAll(PDO::FETCH_COLUMN));
     $ins = pdo()->prepare(
-        'INSERT INTO pekebun (lembaga_id, nama, nik, no_kk, jk, tempat_lahir, tanggal_lahir, jenis_pelatihan, jalur, alamat, hp, desa, provinsi, kabupaten, kecamatan, luas_lahan, no_shm, pemilik_sebelumnya, kepala_desa, agama, pekerjaan, jalan_rt_rw, nib, status_tanah, dipergunakan, batas_utara, batas_timur, batas_selatan, batas_barat, tahun_kuasai, perolehan_dari, perolehan_sejak, saksi1_nama, saksi1_umur, saksi1_pekerjaan, saksi1_alamat, saksi2_nama, saksi2_umur, saksi2_pekerjaan, saksi2_alamat) VALUES (' . implode(',', array_fill(0, 40, '?')) . ')'
+        'INSERT INTO pekebun (lembaga_id, nama, nik, no_kk, jk, tempat_lahir, tanggal_lahir, jenis_pelatihan, jalur, alamat, hp, desa, provinsi, kabupaten, kecamatan, lahan_provinsi, lahan_kabupaten, lahan_kecamatan, lahan_desa, luas_lahan, no_shm, pemilik_sebelumnya, kepala_desa, agama, pekerjaan, jalan_rt_rw, nib, status_tanah, dipergunakan, batas_utara, batas_timur, batas_selatan, batas_barat, tahun_kuasai, perolehan_dari, perolehan_sejak, saksi1_nama, saksi1_umur, saksi1_pekerjaan, saksi1_alamat, saksi2_nama, saksi2_umur, saksi2_pekerjaan, saksi2_alamat) VALUES (' . implode(',', array_fill(0, 44, '?')) . ')'
     );
     $ok = 0;
     $skip = 0;
@@ -252,6 +257,10 @@ if ($act === 'import') {
         $kecamatan = trim((string)($r['kecamatan'] ?? ''));
         $alamat = trim((string)($r['alamat'] ?? ''));
         $desa = trim((string)($r['desa'] ?? ''));
+        $lahanProvinsi = trim((string)($r['lahan_provinsi'] ?? ''));
+        $lahanKabupaten = trim((string)($r['lahan_kabupaten'] ?? ''));
+        $lahanKecamatan = trim((string)($r['lahan_kecamatan'] ?? ''));
+        $lahanDesa = trim((string)($r['lahan_desa'] ?? ''));
         if ($alamat === '' && $desa !== '') {
             $parts = [];
             if ($desa !== '') $parts[] = 'Desa ' . preg_replace('/^Desa\s+/i', '', $desa);
@@ -294,7 +303,7 @@ if ($act === 'import') {
             $jenisPelatihan === '' || $jalur === '' || $provinsi === '' || $kabupaten === '' ||
             $kecamatan === '' || $desa === '' || $kepalaDesa === '') { $skip++; continue; }
         if (isset($existing[$nik])) { $skip++; continue; }
-        $ins->execute([$lembagaId, $nama, $nik, $noKk, $jk, $tempatLahir, $tanggalLahir, $jenisPelatihan, $jalur, $alamat, $hp, $desa, $provinsi, $kabupaten, $kecamatan, $luas, $noShm, $pemilikSebelumnya, $kepalaDesa, $agama, $pekerjaan, $jalanRtRw, $nib, $statusTanah, $dipergunakan, $batasUtara, $batasTimur, $batasSelatan, $batasBarat, $tahunKuasai, $perolehanDari, $perolehanSejak, $s1Nama, $s1Umur, $s1Pekerjaan, $s1Alamat, $s2Nama, $s2Umur, $s2Pekerjaan, $s2Alamat]);
+        $ins->execute([$lembagaId, $nama, $nik, $noKk, $jk, $tempatLahir, $tanggalLahir, $jenisPelatihan, $jalur, $alamat, $hp, $desa, $provinsi, $kabupaten, $kecamatan, $lahanProvinsi, $lahanKabupaten, $lahanKecamatan, $lahanDesa, $luas, $noShm, $pemilikSebelumnya, $kepalaDesa, $agama, $pekerjaan, $jalanRtRw, $nib, $statusTanah, $dipergunakan, $batasUtara, $batasTimur, $batasSelatan, $batasBarat, $tahunKuasai, $perolehanDari, $perolehanSejak, $s1Nama, $s1Umur, $s1Pekerjaan, $s1Alamat, $s2Nama, $s2Umur, $s2Pekerjaan, $s2Alamat]);
         $existing[$nik] = true;
         $ok++;
     }

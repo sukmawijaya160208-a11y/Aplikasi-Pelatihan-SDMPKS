@@ -13,7 +13,8 @@ const BK_TABLES = ['roles', 'role_permissions', 'permissions', 'users', 'lembaga
 
 const PEKEBUN_COLS = [
     'nama', 'nik', 'no_kk', 'jk', 'tempat_lahir', 'tanggal_lahir', 'jenis_pelatihan', 'jalur', 'alamat', 'hp',
-    'desa', 'provinsi', 'kabupaten', 'kecamatan', 'kepala_desa', 'agama', 'pekerjaan', 'jalan_rt_rw', 'nib',
+    'desa', 'provinsi', 'kabupaten', 'kecamatan', 'lahan_provinsi', 'lahan_kabupaten', 'lahan_kecamatan', 'lahan_desa',
+    'kepala_desa', 'agama', 'pekerjaan', 'jalan_rt_rw', 'nib',
     'status_tanah', 'dipergunakan', 'batas_utara', 'batas_timur', 'batas_selatan', 'batas_barat', 'tahun_kuasai',
     'perolehan_dari', 'perolehan_sejak', 'saksi1_nama', 'saksi1_umur', 'saksi1_pekerjaan', 'saksi1_alamat',
     'saksi2_nama', 'saksi2_umur', 'saksi2_pekerjaan', 'saksi2_alamat', 'luas_lahan', 'no_shm',

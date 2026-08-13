@@ -143,6 +143,17 @@
       return seg.length ? 'di ' + seg.join(' ') : '';
     },
 
+    lokasiLahan: function (p, parts) {
+      var lahan = {
+        desa: p.lahan_desa,
+        kecamatan: p.lahan_kecamatan,
+        kabupaten: p.lahan_kabupaten
+      };
+      var lok = AppSurat.lokasiPekebun(lahan, null);
+      if (lok) return lok;
+      return AppSurat.lokasiPekebun(p, parts);
+    },
+
     formatLuas: function (v) {
       var n = parseFloat(String(v == null ? '' : v).replace(/,/g, '.'));
       if (!isFinite(n) || n <= 0) return '........';
@@ -221,7 +232,7 @@
       } else if (jenis === 'lahan') {
         var alamatLengkap = (p.alamat || '').toLowerCase().indexOf('kabupaten') > -1;
         var alamat3 = (!alamatLengkap && parts.kecKab) ? '<br><span class="l-sub">' + esc(parts.kecKab) + '</span>' : '';
-        var lokTxt = AppSurat.lokasiPekebun(p, parts);
+        var lokTxt = AppSurat.lokasiLahan(p, parts);
         var luas = AppSurat.formatLuas(p.luas_lahan);
         body =
           '<div class="l-title">SURAT PERNYATAAN</div>' +
@@ -275,9 +286,9 @@
           '<p class="no-indent">dengan ini menyatakan bahwa Saya benar-benar menguasai secara fisik bidang tanah yang terletak di :</p>' +
           '<table class="l-table">' +
           rowF('Jalan/RT/RW', p.jalan_rt_rw) +
-          rowF('Desa', p.desa || fParts.desaName) +
-          rowF('Kecamatan', p.kecamatan || fParts.kecName) +
-          rowF('Kabupaten', p.kabupaten || fParts.kabName) +
+          rowF('Desa', p.lahan_desa || p.desa || fParts.desaName) +
+          rowF('Kecamatan', p.lahan_kecamatan || p.kecamatan || fParts.kecName) +
+          rowF('Kabupaten', p.lahan_kabupaten || p.kabupaten || fParts.kabName) +
           rowF('NIB', p.nib) +
           rowF('Status Tanah', p.status_tanah) +
           rowF('Dipergunakan Untuk', p.dipergunakan) +

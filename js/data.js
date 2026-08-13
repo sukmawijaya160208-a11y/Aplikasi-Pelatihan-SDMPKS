@@ -381,13 +381,15 @@
   }
 
   function resetWilayahForm() {
-    var p = document.getElementById('fProvinsi');
-    if (p) p.value = '';
-    ['fKabupaten', 'fKecamatan', 'fDesa'].forEach(function (id) {
-      var s = document.getElementById(id);
-      if (!s) return;
-      s.innerHTML = '<option value="">-- Pilih --</option>';
-      s.disabled = true;
+    ['f', 'l'].forEach(function (prefix) {
+      var p = document.getElementById(prefix + 'Provinsi');
+      if (p) p.value = '';
+      ['Kabupaten', 'Kecamatan', 'Desa'].forEach(function (suffix) {
+        var s = document.getElementById(prefix + suffix);
+        if (!s) return;
+        s.innerHTML = '<option value="">-- Pilih --</option>';
+        s.disabled = true;
+      });
     });
   }
 
@@ -749,6 +751,8 @@
     if (window.AppWilayah) {
       AppWilayah.init('f');
       AppWilayah.bindRegionSelects('f', {});
+      AppWilayah.init('l');
+      AppWilayah.bindRegionSelects('l', {});
       fillOpsiKeikutsertaan('fJenisPelatihan', 'fJalur');
     }
     searchInput.addEventListener('input', function () {
@@ -777,6 +781,7 @@
       var wilayah = window.AppWilayah ? AppWilayah.readValues('f') : { desa: '' };
       var desa = wilayah.desa || '';
       var alamat = (window.AppWilayah && AppWilayah.composeAlamat('f')) || '';
+      var lahan = window.AppWilayah ? AppWilayah.readValues('l') : {};
       var kepalaDesa = document.getElementById('fKepalaDesa').value.trim();
       var hp = document.getElementById('fHp').value.trim();
       var luasLahan = document.getElementById('fLuasLahan').value.trim();
@@ -820,6 +825,8 @@
         jenis_pelatihan: jenisPelatihan, jalur: jalur,
         alamat: alamat, desa: desa,
         provinsi: wilayah.provinsi || '', kabupaten: wilayah.kabupaten || '', kecamatan: wilayah.kecamatan || '',
+        lahan_provinsi: lahan.provinsi || '', lahan_kabupaten: lahan.kabupaten || '',
+        lahan_kecamatan: lahan.kecamatan || '', lahan_desa: lahan.desa || '',
         kepala_desa: kepalaDesa, hp: hp,
         luas_lahan: luasLahan,
         no_shm: noShm, pemilik_sebelumnya: pemilikSebelumnya,
@@ -948,6 +955,10 @@
           AppWilayah.setValues('f', {
             provinsi: p2.provinsi || '', kabupaten: p2.kabupaten || '',
             kecamatan: p2.kecamatan || '', desa: p2.desa || ''
+          }, function () {});
+          AppWilayah.setValues('l', {
+            provinsi: p2.lahan_provinsi || '', kabupaten: p2.lahan_kabupaten || '',
+            kecamatan: p2.lahan_kecamatan || '', desa: p2.lahan_desa || ''
           }, function () {});
         }
         if (AppAuth.isAdmin()) {
