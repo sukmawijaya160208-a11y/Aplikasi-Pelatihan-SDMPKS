@@ -466,7 +466,7 @@
   }
 
   function exportUsulanExcel() {
-    var rows = usulanFiltered();
+    var rows = usulanExportRows();
     if (!rows.length) { AppToast('Tidak ada data untuk diunduh.', 'warn'); return; }
     window.loadExcelLib().then(function () {
     var aoa = [['No', 'Nama', 'NIK', 'No. KK', 'Jenis Kelamin', 'Jenis Pelatihan', 'Jalur', 'Desa', 'Kelembagaan', 'Status', 'Diajukan']];
@@ -476,8 +476,11 @@
     var ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = [{ wch: 5 }, { wch: 25 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 20 }, { wch: 12 }, { wch: 18 }, { wch: 26 }, { wch: 18 }, { wch: 13 }];
     var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Usulan Kelembagaan');
-    XLSX.writeFile(wb, 'Data_Usulan_' + window.yymmdd() + '.xlsx');
+    var namaSheet = 'Usulan';
+    if (usPelatihan) namaSheet = usPelatihan === '__BELUM__' ? 'Belum Diisi' : usPelatihan;
+    XLSX.utils.book_append_sheet(wb, ws, namaSheet.substring(0, 31));
+    var fPart = usPelatihan ? (usPelatihan === '__BELUM__' ? 'Belum_Diisi' : usPelatihan.replace(/[^\w]+/g, '_')) : '';
+    XLSX.writeFile(wb, 'Data_Usulan' + (fPart ? '_' + fPart : '') + '_' + window.yymmdd() + '.xlsx');
     AppToast('Data usulan berhasil diunduh sebagai Excel.');
     }).catch(function () {
       AppToast('Library Excel tidak termuat. Periksa koneksi internet.', 'error');
@@ -500,6 +503,7 @@
   var usSearch = '';
   var usLembaga = 0;
   var usStatus = '';
+  var usPelatihan = '';
   var usDinasLid = 0;
   var usulanKeep = false;
 
@@ -508,9 +512,22 @@
     return usulan.rows.filter(function (p) {
       if (usLembaga && String(p.lembaga_id) !== String(usLembaga)) return false;
       if (usStatus && p.status !== usStatus) return false;
+      if (usPelatihan) {
+        var v = (p.jenis_pelatihan || '').trim();
+        if (usPelatihan === '__BELUM__') { if (v !== '') return false; }
+        else if (v !== usPelatihan) return false;
+      }
       if (!q) return true;
       return (p.nama || '').toLowerCase().indexOf(q) > -1 || (p.nik || '').indexOf(q) > -1;
     });
+  }
+
+  function usulanExportRows() {
+    var rows = usulanFiltered();
+    if (AppAuth.isDinas() && usDinasLid) {
+      rows = rows.filter(function (p) { return String(p.lembaga_id) === String(usDinasLid); });
+    }
+    return rows;
   }
 
   function renderUsulan() {
@@ -673,6 +690,15 @@
         opts += '<option value="' + g.lembaga_id + '"' + (String(usLembaga) === String(g.lembaga_id) ? ' selected' : '') + '>' + esc(g.nama_lembaga) + '</option>';
       });
       sel.innerHTML = opts;
+      var selP = document.getElementById('filterUsulanPelatihan');
+      if (selP) {
+        var optsP = '<option value="">Semua Jenis Pelatihan</option>';
+        (window.AppWilayah ? AppWilayah.OPSI_PELATIHAN : []).forEach(function (o) {
+          optsP += '<option value="' + esc(o) + '"' + (usPelatihan === o ? ' selected' : '') + '>' + esc(o) + '</option>';
+        });
+        optsP += '<option value="__BELUM__"' + (usPelatihan === '__BELUM__' ? ' selected' : '') + '>Belum Diisi</option>';
+        selP.innerHTML = optsP;
+      }
       renderUsulan();
     }).catch(function (e) {
       document.getElementById('usGroups').innerHTML = '<div class="empty-state">Gagal memuat data.</div>';
@@ -735,6 +761,10 @@
       });
       document.getElementById('filterUsulanStatus').addEventListener('change', function () {
         usStatus = this.value;
+        renderUsulan();
+      });
+      document.getElementById('filterUsulanPelatihan').addEventListener('change', function () {
+        usPelatihan = this.value;
         renderUsulan();
       });
     }

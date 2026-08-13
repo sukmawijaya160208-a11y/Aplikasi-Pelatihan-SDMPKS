@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Dashboard - Aplikasi Pelatihan SDMPKS</title>
-<link rel="stylesheet" href="css/style.css?v=75">
+<link rel="stylesheet" href="css/style.css?v=76">
 </head>
 <body>
 
@@ -89,6 +89,13 @@
 
     <!-- ============ DASHBOARD ============ -->
     <section class="page active" id="page-dashboard">
+      <div class="card dash-filter" id="dashFilter" hidden>
+        <div class="card-head card-head-toolbar">
+          <h3>Ringkasan per Kelembagaan</h3>
+          <span class="dash-filter-hint">Centang satu atau lebih kelembagaan untuk melihat ringkasan, atau biarkan kosong untuk seluruh kelembagaan.</span>
+        </div>
+        <div class="dash-filter-chips" id="dashFilterChips"></div>
+      </div>
       <div class="stat-grid" id="statGrid"></div>
       <div class="chart-grid">
         <div class="card">
@@ -697,6 +704,9 @@
             <input type="search" id="searchUsulan" placeholder="Cari nama / NIK...">
             <select id="filterUsulanLembaga">
               <option value="">Semua Kelembagaan</option>
+            </select>
+            <select id="filterUsulanPelatihan">
+              <option value="">Semua Jenis Pelatihan</option>
             </select>
             <select id="filterUsulanStatus">
               <option value="">Semua Status</option>
@@ -1631,8 +1641,8 @@
 <script src="js/auth.js?v=26"></script>
 <script src="js/store.js?v=36"></script>
 <script src="js/wilayah.js?v=31"></script>
-<script src="js/data.js?v=46"></script>
-<script src="js/berkas.js?v=43"></script>
+<script src="js/data.js?v=47"></script>
+    <script src="js/berkas.js?v=44"></script>
 <script src="js/excel.js?v=34"></script>
 <script src="js/surat.js?v=67"></script>
 <script src="js/cetak.js?v=28"></script>

@@ -293,12 +293,40 @@
     }
   }
 
+  /* ============ Dashboard: filter ringkasan per kelembagaan ============ */
+  var dashSel = [];
+
+  function fetchDashboardStats() {
+    var params = {};
+    if (dashSel.length) params.lembaga_id = dashSel.join(',');
+    return Api.get('dashboard.php', 'stats', params);
+  }
+
+  function buildDashFilter(groups) {
+    var wrap = document.getElementById('dashFilter');
+    var chips = document.getElementById('dashFilterChips');
+    if (!wrap || !chips) return;
+    if (AppAuth.role() === 'lembaga' || !groups.length) {
+      wrap.hidden = true;
+      chips.innerHTML = '';
+      return;
+    }
+    wrap.hidden = false;
+    chips.innerHTML =
+      '<label class="chip' + (dashSel.length === 0 ? ' chip-on' : '') + '"><input type="checkbox" data-all="1"' + (dashSel.length === 0 ? ' checked' : '') + '>Semua Kelembagaan</label>' +
+      groups.map(function (g) {
+        var on = dashSel.indexOf(String(g.id)) > -1;
+        return '<label class="chip' + (on ? ' chip-on' : '') + '"><input type="checkbox" value="' + g.id + '"' + (on ? ' checked' : '') + '>' + esc(g.nama_lembaga) + '</label>';
+      }).join('');
+  }
+
   window.AppPages.dashboard = function () {
     var grid = document.getElementById('statGrid');
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Memuat data...</div>';
-    Api.get('dashboard.php', 'stats').then(function (j) {
+    fetchDashboardStats().then(function (j) {
       var role = AppAuth.role();
       var s = j.stats.stats;
+      buildDashFilter(j.stats.per_lembaga || []);
       renderStatCards(role, s);
       renderRecent(role, j.stats);
       if (window.AppChart) {
@@ -1239,6 +1267,20 @@
 
     AppGo('dashboard');
   }
+
+  document.addEventListener('change', function (e) {
+    var chk = e.target;
+    if (!chk || chk.type !== 'checkbox' || !chk.closest('#dashFilterChips')) return;
+    if (chk.getAttribute('data-all')) {
+      dashSel = [];
+    } else {
+      var id = String(chk.value);
+      var idx = dashSel.indexOf(id);
+      if (chk.checked && idx < 0) dashSel.push(id);
+      if (!chk.checked && idx > -1) dashSel.splice(idx, 1);
+    }
+    AppPages.dashboard();
+  });
 
   document.addEventListener('DOMContentLoaded', function () {
     AppAuth.ensure().then(function () {

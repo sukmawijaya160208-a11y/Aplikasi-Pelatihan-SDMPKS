@@ -62,15 +62,25 @@ if ($u['role'] === 'lembaga') {
     $st->execute([$lid]);
     $out['bulanan'] = $st->fetchAll();
 } else {
-    // admin & dinas: lintas lembaga
+    // admin & dinas: lintas lembaga (opsional filter lembaga_id=1,2,3 -> ringkasan per kelembagaan)
+    $lidFilter = [];
+    foreach (explode(',', (string)($_GET['lembaga_id'] ?? '')) as $raw) {
+        $v = (int)trim($raw);
+        if ($v > 0) $lidFilter[$v] = $v;
+    }
+    $lidFilter = array_values($lidFilter);
+    $lids = count($lidFilter) ? implode(',', $lidFilter) : '';
+    $wP = $lids !== '' ? " WHERE p.lembaga_id IN ($lids)" : '';
+    $wS = $lids !== '' ? " WHERE lembaga_id IN ($lids)" : '';
+
     $st = pdo()->query(
         'SELECT COUNT(*) AS total,
-                SUM(CASE WHEN jk = "LAKI-LAKI" THEN 1 ELSE 0 END) AS pria,
-                SUM(CASE WHEN jk = "PEREMPUAN" THEN 1 ELSE 0 END) AS wanita,
-                SUM(CASE WHEN status = "diajukan" THEN 1 ELSE 0 END) AS menunggu,
-                SUM(CASE WHEN status = "disetujui" THEN 1 ELSE 0 END) AS disetujui,
-                SUM(CASE WHEN status = "dikembalikan" THEN 1 ELSE 0 END) AS dikembalikan
-         FROM pekebun'
+                SUM(CASE WHEN p.jk = "LAKI-LAKI" THEN 1 ELSE 0 END) AS pria,
+                SUM(CASE WHEN p.jk = "PEREMPUAN" THEN 1 ELSE 0 END) AS wanita,
+                SUM(CASE WHEN p.status = "diajukan" THEN 1 ELSE 0 END) AS menunggu,
+                SUM(CASE WHEN p.status = "disetujui" THEN 1 ELSE 0 END) AS disetujui,
+                SUM(CASE WHEN p.status = "dikembalikan" THEN 1 ELSE 0 END) AS dikembalikan
+         FROM pekebun p' . $wP
     );
     $s = $st->fetch();
     $out['stats'] = [
@@ -82,22 +92,22 @@ if ($u['role'] === 'lembaga') {
         'dikembalikan' => (int)$s['dikembalikan'],
     ];
     $out['stats']['lembaga'] = (int)pdo()->query('SELECT COUNT(*) FROM lembaga')->fetchColumn();
-    $out['stats']['surat'] = (int)pdo()->query('SELECT COUNT(*) FROM surat')->fetchColumn();
+    $out['stats']['surat'] = (int)pdo()->query('SELECT COUNT(*) FROM surat' . $wS)->fetchColumn();
     $out['stats']['per_pelatihan'] = array_map(function ($r) {
         $r['n'] = (int)$r['n'];
         return $r;
     }, pdo()->query(
-        'SELECT CASE WHEN jenis_pelatihan = "" THEN "Belum Diisi" ELSE jenis_pelatihan END AS jenis_pelatihan,
+        'SELECT CASE WHEN p.jenis_pelatihan = "" THEN "Belum Diisi" ELSE p.jenis_pelatihan END AS jenis_pelatihan,
                 COUNT(*) AS n
-         FROM pekebun
-         GROUP BY jenis_pelatihan
-         ORDER BY (jenis_pelatihan = ""), n DESC'
+         FROM pekebun p' . $wP . '
+         GROUP BY p.jenis_pelatihan
+         ORDER BY (p.jenis_pelatihan = ""), n DESC'
     )->fetchAll());
     if ($u['role'] === 'admin') {
         $out['stats']['akun'] = (int)pdo()->query('SELECT COUNT(*) FROM users')->fetchColumn();
     }
 
-    // per lembaga (chart dinas/admin)
+    // per lembaga (daftar penuh untuk checklist ringkasan dinas/admin)
     $out['per_lembaga'] = pdo()->query(
         'SELECT l.id, l.nama_lembaga,
                 COUNT(p.id) AS total,
@@ -113,14 +123,14 @@ if ($u['role'] === 'lembaga') {
 
     $st = pdo()->query(
         'SELECT p.*, COALESCE(l.nama_lembaga, "") AS lembaga_nama
-         FROM pekebun p LEFT JOIN lembaga l ON l.id = p.lembaga_id
+         FROM pekebun p LEFT JOIN lembaga l ON l.id = p.lembaga_id' . $wP . '
          ORDER BY p.id DESC LIMIT 8'
     );
     $out['recent'] = $st->fetchAll();
 
     $st = pdo()->query(
-        "SELECT DATE_FORMAT(tgl_input, '%Y-%m') AS bulan, COUNT(*) AS n
-         FROM pekebun WHERE tgl_input >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        "SELECT DATE_FORMAT(p.tgl_input, '%Y-%m') AS bulan, COUNT(*) AS n
+         FROM pekebun p" . ($wP !== '' ? $wP : ' WHERE 1=1') . " AND p.tgl_input >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
          GROUP BY bulan ORDER BY bulan"
     );
     $out['bulanan'] = $st->fetchAll();

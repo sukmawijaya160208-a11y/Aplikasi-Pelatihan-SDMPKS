@@ -1000,6 +1000,20 @@ a { color: var(--green-600); text-decoration: none; }
 .st-dikembalikan { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 .st-duplikat { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; font-weight: 700; }
 
+/* ---- Filter ringkasan dashboard per kelembagaan ---- */
+.dash-filter { margin-bottom: 16px; }
+.dash-filter-hint { color: var(--muted, #64748b); font-size: 12px; font-weight: 500; }
+.dash-filter-chips { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid #d7e0dd; background: #fff; border-radius: 999px;
+  padding: 6px 12px; font-size: 12.5px; font-weight: 600; color: #334155;
+  cursor: pointer; user-select: none; transition: all .15s ease;
+}
+.chip:hover { border-color: #0f7a54; color: #0f7a54; }
+.chip input { accent-color: #0f7a54; cursor: pointer; }
+.chip-on { background: #e7f6ef; border-color: #0f7a54; color: #0f7a54; }
+
 .alasan {
   display: inline-block;
   max-width: 180px;
