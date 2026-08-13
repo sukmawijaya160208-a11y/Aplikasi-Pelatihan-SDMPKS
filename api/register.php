@@ -10,6 +10,14 @@ $act = $_GET['act'] ?? '';
 
 if ($act === 'register') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_err('Metode tidak diizinkan.', 405);
+
+    // Anti spam pendaftaran: maksimal 5 pendaftaran per 60 menit per IP.
+    $rlKey = 'register:' . sd_client_ip();
+    $sisa = rate_limit_hit($rlKey, 5, 3600, 3600);
+    if ($sisa > 0) {
+        json_err('Terlalu banyak pendaftaran dari perangkat ini. Coba lagi dalam ' . ceil($sisa / 60) . ' menit.', 429, 'rate_limited');
+    }
+
     $d = body();
 
     $hp = preg_replace('/\D/', '', trim((string)($d['no_hp'] ?? '')));
@@ -30,7 +38,7 @@ if ($act === 'register') {
     if (!preg_match('/^08\d{8,12}$/', $hp)) {
         json_err('Nomor HP tidak valid. Gunakan format 08xxxxxxxxxx.', 422, 'no_hp_invalid');
     }
-    if (strlen($password) < 6) json_err('Password minimal 6 karakter.', 422, 'password_pendek');
+    if (strlen($password) < 8) json_err('Password minimal 8 karakter.', 422, 'password_pendek');
     if (!preg_match('/^\d{4}$/', $tahun)) json_err('Tahun anggaran tidak valid.', 422, 'tahun_invalid');
 
     $chk = pdo()->prepare('SELECT id FROM users WHERE username = ?');

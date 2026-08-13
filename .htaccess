@@ -10,6 +10,22 @@
   <FilesMatch "\.(html|php)$">
     Header set Cache-Control "no-cache, no-store, must-revalidate"
   </FilesMatch>
+
+  # ---- Security / hardening headers (lapisan Apache/XAMPP) ----
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set X-XSS-Protection "1; mode=block"
+
+  # ---- Content Security Policy ----
+  # Script hanya dari situs sendiri + CDN yang diizinkan (tanpa 'unsafe-inline').
+  # Style inline tetap diizinkan karena kode UI menggunakan attribute style.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+
+  # Sembunyikan versi server web
+  Header unset X-Powered-By
+  Header always unset Server
 </IfModule>
 
 Options -Indexes

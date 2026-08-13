@@ -22,6 +22,19 @@ Desktop.ini
 .idea/
 node_modules/
 
+# State sementara keamanan (rate-limit, audit log) - data runtime
+storage/ratelimit/
+storage/audit.log
+!storage/.htaccess
+
+# Artefak uji lokal / debug
+resp.txt
+resp_dash.txt
+resp_dash2.txt
+
+# Sumber favicon (salinan final di assets/img/favicon.ico)
+foto_icon/
+
 # Artefak uji otomatis
 *.cjs.dbg
 

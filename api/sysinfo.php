@@ -38,9 +38,9 @@ if ($act === 'upload_limits') {
         'max_file_uploads' => (string)ini_get('max_file_uploads'),
         'max_upload_app' => 5 * 1024 * 1024,
         'sapi' => (string)php_sapi_name(),
-        'server_software' => (string)($_SERVER['SERVER_SOFTWARE'] ?? ''),
+        // Hanya nama platform (tanpa versi) agar versi web server tidak bocor.
+        'server_software' => sd_server_name(),
         'memory_limit' => (string)ini_get('memory_limit'),
-        'php_version' => PHP_VERSION,
     ]);
 }
 

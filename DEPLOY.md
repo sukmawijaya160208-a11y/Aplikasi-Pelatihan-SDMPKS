@@ -305,6 +305,18 @@ Kredensial DB container ada di `deploy/.env` (chmod 600). Update manual: `cd /va
 - PENTING bind-mount: `sed -i` pada file yang di-mount (`docker/nginx.conf`, `docker-compose.yml`) mengganti inode file, sehingga isi di dalam container TIDAK ter-update walau direload. Setelah mengedit file di `docker/`, WAJIB `docker restart sdmpks-nginx` (atau `docker compose up -d --no-deps nginx`) agar bind-mount me-re-read file baru.
 - Verifikasi cepat setelah perubahan: `curl -s https://aplikasisdmpksa.online/` harus 200, dan log `docker logs sdmpks-app` bebas `Warning`/`error` PHP.
 
+### Catatan operasional (13 Agt 2026) — hardening keamanan
+
+- **Rate limit login**: 5 percobaan gagal / 15 menit per (IP+username) → blokir 15 menit. State di `storage/ratelimit/` (file, bukan DB) — di-gitignore, aman untuk `git pull`.
+- **CSRF**: semua POST/upload wajib header `X-CSRF-Token` (diberikan server saat login/`me`). Tanpa token → HTTP 419. Act publik yang dikecualikan: `login`, `logout`, `forgot_password`, `register`.
+- **Password baru** (register & ganti password) min 8 karakter; akun lama TIDAK di-reset.
+- **Idle timeout** 30 menit: sesi tanpa aktivitas diakhiri (401 `session_timeout`).
+- **Security headers + CSP**: dipasang di `docker/nginx.conf` (lintas `location`) → `script-src 'self'` + allowlist `cdn.jsdelivr.net` & `cdnjs.cloudflare.com` (tanpa `'unsafe-inline'`; inline `onerror` sudah dipindah ke `js/auth.js`). Setelah edit nginx.conf **wajib `docker restart sdmpks-nginx`** (bind-mount inode, lihat catatan di atas).
+- **server_tokens off** → versi nginx tidak bocor ke klien.
+- **Lupa password**: user memakai form di halaman login → notifikasi ke admin (tabel `notifikasi`) + audit log di `storage/audit.log` → admin reset via `users.php?act=reset_password` → password baru disampaikan via WhatsApp `0822-2728-3416` (tombol WA ada di login). Pesan respons selalu generik (anti user-enumeration).
+- **Favicon**: `assets/img/favicon.ico` (salinan dari `foto_icon/`), dipasang di `index.html` & `dashboard.html`.
+- Direktori `storage/` harus writable oleh user PHP-FPM: `sudo chown -R www-data:www-data /var/www/sdmpks/app/storage` (atau user container bila di dalam Docker volume).
+
 ---
 
 ## Pengembangan Lokal (Laptop) — MCP & Skills OpenCode

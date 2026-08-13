@@ -3,6 +3,7 @@
 // SDMPKS - Koneksi PDO & Helper API
 // ============================================================
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/security.php';
 
 // API harus selalu merespons JSON murni: matikan tampilan error (warning/fatal)
 // di output supaya tidak merusak body JSON (sumber "Unexpected token '<'").
@@ -10,8 +11,36 @@ require_once __DIR__ . '/config.php';
 @ini_set('display_errors', '0');
 @ini_set('log_errors', '1');
 
+// Perpanjang umur GC sesi mengikuti idle timeout aplikasi.
+@ini_set('session.gc_maxlifetime', (string)(idle_timeout_sec() + 300));
+
+// (Cookie sesi Secure/SameSite diatur di api/config.php SEBELUM session_start)
+
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+header('X-XSS-Protection: 1; mode=block');
+
+/* ============================================================
+   CSRF: semua request mutasi (POST) otomatis diverifikasi,
+   kecuali act publik (login, logout, forgot_password, register).
+   Token harus dikirim via header "X-CSRF-Token".
+   ============================================================ */
+$sd_script = basename($_SERVER['SCRIPT_NAME'] ?? '');
+$sd_act = (string)($_GET['act'] ?? '');
+
+// Cek idle timeout hanya untuk sesi ber-login di endpoint non-publik.
+if (!csrf_public_act($sd_script, $sd_act)) {
+    session_check_idle();
+}
+
+// CSRF: semua request mutasi (POST) otomatis diverifikasi,
+// kecuali act publik (login, logout, forgot_password, register).
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && !csrf_public_act($sd_script, $sd_act)) {
+    csrf_verify($sd_script, $sd_act);
+}
 
 function pdo(): PDO
 {

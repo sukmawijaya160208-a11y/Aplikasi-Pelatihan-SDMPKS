@@ -32,16 +32,26 @@
       return Promise.reject(err);
     }
     return resp.json().then(function (j) {
+      // Simpan token CSRF terbaru bila server mengirimkannya
+      // (respons login / me). Dipakai untuk permintaan berikutnya.
+      if (j && typeof j.csrf === 'string' && j.csrf) {
+        csrf = j.csrf;
+      }
       if (!j || j.ok === false) {
         var msg = (j && j.error) || 'Terjadi kesalahan pada server.';
         var err = new Error(msg);
         err.status = resp.status;
         err.code = (j && j.code) || '';
         err.detail = (j && j.detail) || null;
+        // Token CSRF basi (sesi kedaluwarsa/berubah): kembali ke halaman masuk.
+        if (err.code === 'csrf_invalid' && fileOf(resp.url) !== 'auth.php') {
+          window.location.href = 'index.html';
+        }
         return Promise.reject(err);
       }
       return j;
     }).catch(function (e) {
+      if (e instanceof Error && e.code) throw e;
       console.error('[SDMPKS] Gagal parsing JSON', resp.status, resp.url, e);
       var err = new Error('Tanggapan server tidak valid (HTTP ' + resp.status + '). Hubungi administrator bila berlanjut.');
       err.status = resp.status;
@@ -52,6 +62,14 @@
   function fileOf(url) {
     var m = url.match(/\/api\/([a-z]+)\.php/i);
     return m ? m[1] : '';
+  }
+
+  var csrf = '';
+
+  function csrfHeaders(base) {
+    var h = base || {};
+    if (csrf) h['X-CSRF-Token'] = csrf;
+    return h;
   }
 
   window.Api = {
@@ -66,7 +84,7 @@
       return fetch(buildUrl(file, act, params), {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        headers: csrfHeaders({ 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }),
         body: JSON.stringify(data || {})
       }).then(handle);
     },
@@ -87,7 +105,7 @@
       return fetch('api/' + file + '?act=' + encodeURIComponent(act), {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        headers: csrfHeaders({ 'X-Requested-With': 'XMLHttpRequest' }),
         body: fd
       }).then(handle);
     }

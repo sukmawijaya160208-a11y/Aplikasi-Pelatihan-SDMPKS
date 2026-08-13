@@ -20,7 +20,11 @@ define('DB_PASS', '');
 define('INSTALL_ADMIN_USER', 'admin');
 define('INSTALL_ADMIN_PASS', 'admin123');
 
+// ----- Sesi: cookie Secure (saat HTTPS) + httponly + SameSite=Lax -----
+require_once __DIR__ . '/security.php';
+
 if (session_status() === PHP_SESSION_NONE) {
+    sd_session_cookie_secure();
     session_set_cookie_params([
         'httponly' => true,
         'samesite' => 'Lax',

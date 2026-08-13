@@ -103,6 +103,13 @@
   function initLoginPage() {
     initRoleSegmented();
 
+    // Hapus logo bila gagal dimuat (fallback SVG tetap tampil).
+    var logo = document.getElementById('logoMusrawas');
+    if (logo) {
+      logo.addEventListener('error', function () { logo.remove(); });
+      if (logo.complete && logo.naturalWidth === 0) logo.remove();
+    }
+
     var loginForm = document.getElementById('loginForm');
     if (!loginForm) return;
     var savedUser = localStorage.getItem('sdmpks_remember');
@@ -154,6 +161,53 @@
         tp.classList.toggle('active');
       });
     }
+
+    initForgotPassword(loginForm, errBox, card, btnLogin);
+  }
+
+  /* ---------- Lupa Password (permintaan reset via admin) ---------- */
+  function initForgotPassword(loginForm, errBox, card, btnLogin) {
+    var btnOpen = document.getElementById('btnLupaPassword');
+    var box = document.getElementById('forgotBox');
+    var btnKirim = document.getElementById('btnKirimForgot');
+    var btnBatal = document.getElementById('btnBatalForgot');
+    var err = document.getElementById('forgotError');
+    if (!btnOpen || !box) return;
+
+    var show = function (open) {
+      box.hidden = !open;
+      if (loginForm) loginForm.hidden = open;
+      if (err) err.hidden = true;
+      if (open) {
+        var f = document.getElementById('forgotUser');
+        if (f) setTimeout(function () { f.focus(); }, 60);
+      }
+    };
+    btnOpen.addEventListener('click', function () { show(true); });
+    if (btnBatal) btnBatal.addEventListener('click', function () { show(false); });
+
+    if (btnKirim) btnKirim.addEventListener('click', function () {
+      var f = document.getElementById('forgotUser');
+      var u = f ? f.value.trim() : '';
+      if (!u) { if (err) { err.textContent = 'Username wajib diisi.'; err.hidden = false; } return; }
+      if (btnKirim) btnKirim.disabled = true;
+      Api.post('auth.php', 'forgot_password', { username: u }).then(function () {
+        show(false);
+        if (err) err.hidden = true;
+        if (errBox) {
+          errBox.textContent = 'Jika akun terdaftar, permintaan Anda telah diteruskan ke Administrator. Anda akan dihubungi via WhatsApp.';
+          errBox.classList.add('success');
+          errBox.hidden = false;
+        }
+        if (btnKirim) btnKirim.disabled = false;
+      }).catch(function (e) {
+        if (btnKirim) btnKirim.disabled = false;
+        if (err) {
+          err.textContent = e.message || 'Permintaan gagal. Silakan coba lagi.';
+          err.hidden = false;
+        }
+      });
+    });
   }
 
   function selectRole(role) {
@@ -224,7 +278,7 @@
 
       if (!nama) { errBox.textContent = 'Nama kelembagaan wajib diisi.'; errBox.hidden = false; return; }
       if (!/^08\d{8,12}$/.test(hp)) { errBox.textContent = 'Nomor HP tidak valid. Gunakan format 08xxxxxxxxxx.'; errBox.hidden = false; return; }
-      if (p1.length < 6) { errBox.textContent = 'Password minimal 6 karakter.'; errBox.hidden = false; return; }
+      if (p1.length < 8) { errBox.textContent = 'Password minimal 8 karakter.'; errBox.hidden = false; return; }
       if (p1 !== p2) { errBox.textContent = 'Konfirmasi password tidak sama.'; errBox.hidden = false; return; }
       if (tahun && !/^\d{4}$/.test(tahun)) { errBox.textContent = 'Tahun anggaran tidak valid.'; errBox.hidden = false; return; }
 
@@ -305,7 +359,7 @@
         var n1 = document.getElementById('pwNew').value;
         var n2 = document.getElementById('pwNew2').value;
         if (!old) { AppToast('Password lama wajib diisi.', 'error'); return; }
-        if (n1.length < 6) { AppToast('Password baru minimal 6 karakter.', 'error'); return; }
+        if (n1.length < 8) { AppToast('Password baru minimal 8 karakter.', 'error'); return; }
         if (n1 !== n2) { AppToast('Konfirmasi password baru tidak sama.', 'error'); return; }
         Api.post('auth.php', 'change_password', { old: old, new: n1 }).then(function () {
           mp.hidden = true;
