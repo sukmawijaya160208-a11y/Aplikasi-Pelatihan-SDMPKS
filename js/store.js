@@ -61,6 +61,11 @@
     return Math.max(1, Math.round(n / 1048576 * 10) / 10);
   }
 
+  function fmtBytes(n) {
+    if (!n || n <= 0) return '?';
+    return n.toLocaleString('id-ID') + ' B';
+  }
+
   window.AppDokumen = {
     MAX_MB: 5,
     limits: function (force) {
@@ -78,8 +83,12 @@
       var up = uploadLimits.upload_max_filesize_byte || 0;
       var post = uploadLimits.post_max_size_byte || 0;
       var a = up > 0 ? up : Infinity;
-      var b = post > 768 * 1024 ? post - 512 * 1024 : post;
-      return Math.min(5 * 1024 * 1024, a, b > 0 ? b : Infinity);
+      var b = post > 0 ? post : Infinity;
+      var cap = Math.min(5 * 1024 * 1024, a, b);
+      // Data limit tidak kredibel (< 1 MB) -> jangan blokir: serahkan ke server
+      // yang akan menolak dengan pesan berisi angka asli (upload_body_too_large / INI_SIZE).
+      if (cap < 1024 * 1024) return 5 * 1024 * 1024;
+      return cap;
     },
     url: function (id) {
       return 'api/dokumen.php?act=download&id=' + encodeURIComponent(id);
@@ -100,12 +109,19 @@
       return AppDokumen.limits().then(function (lim) {
         var cap = AppDokumen.effectiveMax();
         if (file && file.size > cap) {
-          var up = lim ? lim.upload_max_filesize : '';
-          var po = lim ? lim.post_max_size : '';
+          var up = lim ? lim.upload_max_filesize : '?';
+          var po = lim ? lim.post_max_size : '?';
+          var upB = lim ? fmtBytes(lim.upload_max_filesize_byte) : '?';
+          var poB = lim ? fmtBytes(lim.post_max_size_byte) : '?';
+          var sapi = lim && lim.sapi ? ('; PHP: ' + lim.sapi) : '';
+          var srv = lim && lim.server_software ? ('; web server: ' + lim.server_software) : '';
+          var petunjuk = (sapi.indexOf('fpm') > -1 || sapi.indexOf('cli') > -1)
+            ? ' Atur di php.ini/panel hosting (dan client_max_body_size bila nginx).'
+            : ' Atur di php.ini atau .htaccess bila PHP berjalan sebagai modul Apache.';
           throw new Error(
-            'Batas unggah efektif server saat ini ' + mb(cap) + ' MB (upload_max_filesize=' + up +
-            ', post_max_size=' + po + '). File ' + mb(file.size) + ' MB melebihi batas tersebut. ' +
-            'Minta administrator menaikkan upload_max_filesize dan post_max_size di php.ini / panel hosting.'
+            'Batas unggah efektif server ' + mb(cap) + ' MB (upload_max_filesize=' + up + ' [' + upB +
+            '], post_max_size=' + po + ' [' + poB + ']' + sapi + srv + ').\nFile ' + mb(file.size) +
+            ' MB melebihi batas tersebut.' + petunjuk + ' Dokumen pekebun maksimal 5 MB.'
           );
         }
         return Api.upload('dokumen.php', 'upload', { pekebun_id: pekebunId, file: file }).then(function (j) {
