@@ -13,11 +13,13 @@
 #   - Domain aplikasi diisikan di DOMAIN di bawah.
 #
 # Set variabel lingkungan bila perlu (GitHub Actions):
-#   DEPLOY_DOMAIN  - domain untuk health check (default: aplikasisdmpksa.online)
+#   DEPLOY_DOMAIN  - domain untuk health check (default: aplikasisdmpksa.my.id)
+#   DEPLOY_PHP     - binary PHP untuk lint (default: ea-php83)
 # ============================================================
 set -euo pipefail
 
-DOMAIN="${DEPLOY_DOMAIN:-aplikasisdmpksa.online}"
+DOMAIN="${DEPLOY_DOMAIN:-aplikasisdmpksa.my.id}"
+PHP_BIN="${DEPLOY_PHP:-ea-php83}"
 APP="$HOME/public_html"
 BRANCH="main"
 LOG="$HOME/deploy-rumahweb.log"
@@ -60,14 +62,14 @@ if ! git reset --hard "origin/$BRANCH" >/dev/null 2>&1; then
 fi
 
 # --- Lint PHP (semua file .php di api/) ---
-if ! php -l api/config.php >/dev/null 2>&1; then
+if ! "$PHP_BIN" -l api/config.php >/dev/null 2>&1; then
   log "ERROR: lint api/config.php gagal -> rollback."
   git reset --hard "$ROLLBACK_HEAD" >/dev/null 2>&1 || true
   exit 1
 fi
 LINT_FAIL=0
 while IFS= read -r f; do
-  if ! php -l "$f" >/dev/null 2>&1; then
+  if ! "$PHP_BIN" -l "$f" >/dev/null 2>&1; then
     log "ERROR: lint $f gagal"
     LINT_FAIL=1
   fi
