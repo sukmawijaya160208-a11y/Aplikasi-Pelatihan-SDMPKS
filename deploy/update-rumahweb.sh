@@ -68,12 +68,12 @@ if ! "$PHP_BIN" -l api/config.php >/dev/null 2>&1; then
   exit 1
 fi
 LINT_FAIL=0
-while IFS= read -r f; do
+for f in $(find api -name '*.php' -type f); do
   if ! "$PHP_BIN" -l "$f" >/dev/null 2>&1; then
     log "ERROR: lint $f gagal"
     LINT_FAIL=1
   fi
-done < <(find api -name '*.php' -type f)
+done
 if [ "$LINT_FAIL" = "1" ]; then
   log "Lint gagal -> rollback ke $ROLLBACK_HEAD"
   git reset --hard "$ROLLBACK_HEAD" >/dev/null 2>&1 || true
