@@ -31,6 +31,16 @@
 Options -Indexes
 
 # ============================================================
+# Paksa HTTPS (redirect 301 dari http:// ke https://)
+# ============================================================
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off [OR]
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ============================================================
 # SDMPKS - Batas unggah dokumen
 # Berlaku hanya bila PHP berjalan sebagai modul Apache
 # (mod_php). Aman diabaikan pada server PHP-FPM/nginx;
