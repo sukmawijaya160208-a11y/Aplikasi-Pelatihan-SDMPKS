@@ -78,7 +78,7 @@ if ($act === 'list') {
             WHERE d.id <> p.id AND d.nik = p.nik AND d.no_kk = p.no_kk AND d.no_kk <> ""
         )';
     }
-    $sql .= ' ORDER BY p.id DESC LIMIT 5000';
+    $sql .= ' ORDER BY p.nama ASC, p.id ASC LIMIT 5000';
     $st = pdo()->prepare($sql);
     $st->execute($params);
     json_ok(['rows' => $st->fetchAll()]);

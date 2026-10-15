@@ -588,6 +588,10 @@
           <div class="form-group" id="pekebunMultiWrap" hidden>
             <label>Pilih Pekebun (bisa lebih dari satu)</label>
             <div class="multi-tools">
+              <select id="selDesaBedaNama" aria-label="Filter desa">
+                <option value="__SEMUA__">Semua desa</option>
+              </select>
+              <span class="muted" id="multiCount"></span>
               <button type="button" class="btn btn-sm" id="btnMultiAll">Pilih Semua</button>
               <button type="button" class="btn btn-sm" id="btnMultiNone">Bersihkan</button>
             </div>
@@ -1082,34 +1086,14 @@
               <div class="form-sec">
                 <div class="form-sec-title">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  Detail Desa <small>(untuk Surat Keterangan Desa)</small>
+                  Daftar Desa <small>(profil lengkap per desa, untuk Surat Keterangan Desa)</small>
                 </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="sNamaDesa">Nama Desa</label>
-                    <input type="text" id="sNamaDesa" placeholder="cth: Tegal Sari">
-                  </div>
-                  <div class="form-group">
-                    <label for="sKepalaDesa">Nama Kepala Desa</label>
-                    <input type="text" id="sKepalaDesa" placeholder="cth: SISWOYO">
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="sKepalaDesaHp">No. HP Kepala Desa</label>
-                    <input type="tel" id="sKepalaDesaHp" placeholder="cth: 081234567890">
-                  </div>
-                  <div class="form-group">
-                    <label for="sKodeSuratDesa">Kode Nomor Surat (Desa)</label>
-                    <input type="text" id="sKodeSuratDesa" placeholder="cth: PD-TS/MURA">
-                    <p class="hint">misal 001/PD-TS/MURA/2026</p>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label for="sDesaAlamat">Alamat Desa</label>
-                  <textarea id="sDesaAlamat" rows="2"></textarea>
-                  <p class="hint">Contoh : Desa Tegal Sari Kecamatan Megang Sakti Kabupaten Musi Rawas</p>
-                </div>
+                <div id="desaList"></div>
+                <button type="button" class="btn btn-outline" id="btnTambahDesa">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Tambah Desa
+                </button>
+                <p class="hint">Minimal satu desa. Nama desa, kecamatan, kabupaten, dan kepala desa wajib diisi. Tepat satu desa ditandai sebagai default untuk kop &amp; nomor surat desa.</p>
               </div>
 
               <div class="settings-note">
@@ -1156,24 +1140,6 @@
                 </div>
                 <input type="file" id="fileLogo" accept="image/*" hidden>
                 <p class="hint">PNG / JPG maks. &plusmn; 2 MB</p>
-              </div>
-              <div class="logo-slot">
-                <span class="logo-slot-label">Logo Desa</span>
-                <div class="logo-preview" id="logoDesaPreview">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                </div>
-                <div class="form-actions" id="logoDesaActions">
-                  <button type="button" class="btn btn-outline" id="btnUploadLogoDesa">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Upload
-                  </button>
-                  <button type="button" class="btn btn-danger" id="btnHapusLogoDesa">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    Hapus
-                  </button>
-                </div>
-                <input type="file" id="fileLogoDesa" accept="image/*" hidden>
-                <p class="hint">PNG / JPG maks. &plusmn; 2 MB ï¿½ kop SK Desa</p>
               </div>
             </div>
           </div>
@@ -1222,6 +1188,18 @@
         </div>
         <div class="sheet-preview" id="kopWrap">
           <div class="sheet kop-prev" id="kopPreview"></div>
+        </div>
+        <div class="card-head" style="margin-top:18px;">
+          <span class="card-ico small blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </span>
+          <div>
+            <h3>Pratinjau Kop Desa</h3>
+            <p class="card-sub">Mengikuti profil desa default di atas</p>
+          </div>
+        </div>
+        <div class="sheet-preview" id="kopDesaWrap">
+          <div class="sheet kop-prev" id="kopDesaPreview"></div>
         </div>
       </div>
     </section>
@@ -1711,14 +1689,14 @@
 
 <script src="js/api.js?v=29"></script>
 <script src="js/auth.js?v=27"></script>
-<script src="js/store.js?v=38"></script>
+<script src="js/store.js?v=39"></script>
 <script src="js/wilayah.js?v=32"></script>
-<script src="js/data.js?v=49"></script>
+<script src="js/data.js?v=50"></script>
     <script src="js/berkas.js?v=45"></script>
 <script src="js/excel.js?v=35"></script>
-<script src="js/surat.js?v=68"></script>
+<script src="js/surat.js?v=69"></script>
 <script src="js/cetak.js?v=28"></script>
-<script src="js/pengaturan.js?v=36"></script>
+<script src="js/pengaturan.js?v=37"></script>
 <script src="js/backup.js?v=2"></script>
 <script src="js/chart.js?v=27"></script>
 <script src="js/notifikasi.js?v=26"></script>

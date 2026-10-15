@@ -75,9 +75,16 @@ if ($act === 'next_no') {
     $c = pdo()->prepare('SELECT nilai FROM counters WHERE lembaga_id = ? AND jenis = ?');
     $c->execute([$lembagaId, $jenis]);
     $nilai = (int)($c->fetch()['nilai'] ?? 0);
+    $kodeDesa = '';
+    $desaId = (int)($_GET['desa_id'] ?? 0);
+    if ($desaId > 0 && in_array($jenis, ['beda_nama', 'fisik'], true)) {
+        $dp = pdo()->prepare('SELECT kode_surat_desa FROM lembaga_desa WHERE id = ? AND lembaga_id = ?');
+        $dp->execute([$desaId, $lembagaId]);
+        $kodeDesa = trim((string)($dp->fetchColumn() ?: ''));
+    }
     $kode = in_array($jenis, ['beda_nama', 'fisik'], true)
-        ? ($l['kode_surat_desa'] !== '' ? $l['kode_surat_desa'] : 'PD')
-        : ($l['kode_surat'] ?: 'KUD-SS/MURA');
+        ? ($kodeDesa !== '' ? $kodeDesa : (($l['kode_surat_desa'] !== '' && $l['kode_surat_desa'] !== null) ? $l['kode_surat_desa'] : 'PD'))
+        : (($l['kode_surat'] ?: 'KUD-SS/MURA'));
     $no = sprintf('%03d', $nilai + 1) . '/' . $kode . '/' . date('Y');
     json_ok(['no_surat' => 'Nomor : ' . $no]);
 }
@@ -120,9 +127,16 @@ if ($act === 'save') {
             $st = pdo()->prepare('SELECT kode_surat, kode_surat_desa FROM lembaga WHERE id = ?');
             $st->execute([$lembagaId]);
             $l = $st->fetch();
+            $kodeDesaSave = '';
+            $desaIdSave = (int)($d['desa_id'] ?? 0);
+            if ($desaIdSave > 0) {
+                $dp = pdo()->prepare('SELECT kode_surat_desa FROM lembaga_desa WHERE id = ? AND lembaga_id = ?');
+                $dp->execute([$desaIdSave, $lembagaId]);
+                $kodeDesaSave = trim((string)($dp->fetchColumn() ?: ''));
+            }
             $kode = in_array($jenis, ['beda_nama', 'fisik'], true)
-                ? (($l['kode_surat_desa'] ?? '') !== '' ? $l['kode_surat_desa'] : 'PD')
-                : (($l['kode_surat'] ?? '') ?: 'KUD-SS/MURA');
+                ? ($kodeDesaSave !== '' ? $kodeDesaSave : ((($l['kode_surat_desa'] ?? '') !== '' ? $l['kode_surat_desa'] : 'PD')))
+                : ((($l['kode_surat'] ?? '') !== '' ? $l['kode_surat'] : 'KUD-SS/MURA'));
             $noSurat = 'Nomor : ' . sprintf('%03d', $nilai) . '/' . $kode . '/' . date('Y');
         }
     }

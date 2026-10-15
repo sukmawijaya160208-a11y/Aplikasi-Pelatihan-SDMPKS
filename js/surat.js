@@ -10,6 +10,64 @@
   var isKolektif = function (j) { return KOLEKTIF.indexOf(j) > -1; };
   var isDesaJenis = function (j) { return j === 'beda_nama' || j === 'fisik'; };
 
+  function normDesa(v) {
+    return String(v || '').replace(/^Desa\s+/i, '').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+
+  /* Profil desa: dari settings.desa_daftar, fallback ke kolom tunggal lama. */
+  function desaProfiles(s) {
+    s = s || {};
+    var list = Array.isArray(s.desa_daftar) ? s.desa_daftar : [];
+    if (list.length) return list;
+    if (s.nama_desa || s.kepala_desa || s.desa_alamat || s.kode_surat_desa) {
+      return [{
+        id: 0, nama_desa: s.nama_desa || '', kecamatan: '', kabupaten: '',
+        kepala_desa: s.kepala_desa || '', kepala_desa_hp: s.kepala_desa_hp || '',
+        desa_alamat: s.desa_alamat || '', kode_surat_desa: s.kode_surat_desa || '',
+        logo_desa: s.logo_desa || '', is_default: 1
+      }];
+    }
+    return [];
+  }
+
+  function desaDefault(profiles) {
+    profiles = profiles || [];
+    for (var i = 0; i < profiles.length; i++) {
+      if (Number(profiles[i].is_default) === 1) return profiles[i];
+    }
+    return profiles.length ? profiles[0] : null;
+  }
+
+  /* Profil desa aktif di form Buat Surat (beda_nama). */
+  function desaAktif(lid) {
+    var s = AppSettings.get(lid);
+    var profiles = desaProfiles(s);
+    var sel = document.getElementById('selDesaBedaNama');
+    var v = sel ? sel.value : '';
+    if (!v || v === '__SEMUA__') {
+      return { mode: 'semua', profil: desaDefault(profiles), profiles: profiles };
+    }
+    var found = null;
+    for (var i = 0; i < profiles.length; i++) {
+      var p = profiles[i];
+      if (Number(p.id) > 0 && v === 'p:' + p.id) { found = p; break; }
+      if (v === 'n:' + normDesa(p.nama_desa)) { found = p; break; }
+    }
+    if (!found && v.indexOf('n:') === 0) {
+      var want = v.slice(2);
+      var disp = want;
+      var allRows = (AppData.get() || []);
+      for (var k = 0; k < allRows.length; k++) {
+        if (normDesa(allRows[k].desa) === want) {
+          disp = String(allRows[k].desa || '').replace(/^Desa\s+/i, '').replace(/\s+/g, ' ').trim() || want;
+          break;
+        }
+      }
+      found = { id: 0, nama_desa: disp, kecamatan: '', kabupaten: '', kepala_desa: '', kepala_desa_hp: '', desa_alamat: '', kode_surat_desa: '', logo_desa: '', is_default: 0, tanpaProfil: true };
+    }
+    return { mode: 'satu', profil: found || desaDefault(profiles), profiles: profiles };
+  }
+
   function pad(n) { return ('000' + n).slice(-3); }
   function todayISO() {
     var d = new Date();
@@ -17,6 +75,11 @@
   }
   function sanitizeName(s) {
     return String(s || '').replace(/[^\w\-]+/g, '_').slice(0, 40);
+  }
+  function sortNama(a, b) {
+    var r = String(a && a.nama || '').localeCompare(String(b && b.nama || ''), 'id', { sensitivity: 'base', numeric: true });
+    if (r !== 0) return r;
+    return (Number(a && a.id) || 0) - (Number(b && b.id) || 0);
   }
   function usiaTahun(tgl) {
     if (!tgl) return null;
@@ -61,25 +124,36 @@
         '</div>';
     },
 
-    kopDesaHTML: function (s) {
-      var logo = s.logo_desa ? '<img class="kop-logo" src="' + s.logo_desa + '" alt="Logo Desa">' : '';
-      var parts = AppSurat.alamatParts(s.desa_alamat || s.alamat);
-      var kecRaw = String(parts.kecName || '').replace(/^Kecamatan\s+/i, '').trim().toUpperCase();
-      var kabRaw = String(parts.kabName || '').replace(/^Kabupaten\s+/i, '').trim().toUpperCase();
-      var desaRaw = String(s.nama_desa || '').replace(/^Desa\s+/i, '').trim().toUpperCase();
+    kopDesaHTML: function (s, profil) {
+      s = s || {};
+      profil = profil || {};
+      var logoSrc = profil.logo_desa || s.logo_desa;
+      var logo = logoSrc ? '<img class="kop-logo" src="' + logoSrc + '" alt="Logo Desa">' : '';
+      var kabRaw = String(profil.kabupaten || '').replace(/^(Kabupaten|Kota)\s+/i, '').trim().toUpperCase();
+      var kecRaw = String(profil.kecamatan || '').replace(/^Kecamatan\s+/i, '').trim().toUpperCase();
+      var desaRaw = String(profil.nama_desa || s.nama_desa || '').replace(/^Desa\s+/i, '').trim().toUpperCase();
+      var alamatTxt = profil.desa_alamat || s.desa_alamat || s.alamat;
+      if (!kabRaw || !kecRaw) {
+        var parts = AppSurat.alamatParts(alamatTxt);
+        if (!kecRaw) kecRaw = String(parts.kecName || '').replace(/^Kecamatan\s+/i, '').trim().toUpperCase();
+        if (!kabRaw) kabRaw = String(parts.kabName || '').replace(/^(Kabupaten|Kota)\s+/i, '').trim().toUpperCase();
+      }
       return '<div class="kop">' +
         '<div class="kop-row">' + logo +
         '<div class="kop-txt">' +
         '<div class="kop-jenis">' + (kabRaw ? 'PEMERINTAH KABUPATEN ' + esc(kabRaw) : 'PEMERINTAH KABUPATEN .......') + '</div>' +
         '<div class="kop-kec">' + (kecRaw ? 'KECAMATAN ' + esc(kecRaw) : 'KECAMATAN .......') + '</div>' +
-        '<div class="kop-nama">' + (desaRaw ? 'DESA ' + esc(desaRaw) : esc(s.nama_desa || '')) + '</div>' +
+        '<div class="kop-nama">' + (desaRaw ? 'DESA ' + esc(desaRaw) : esc(profil.nama_desa || s.nama_desa || '')) + '</div>' +
         '<div class="kop-sekretariat">Sekretariat :</div>' +
-        '<div class="kop-alamat">' + esc(s.desa_alamat || s.alamat) + '</div>' +
+        '<div class="kop-alamat">' + esc(alamatTxt) + '</div>' +
         '</div></div>' +
         '<div class="kop-rule thin"></div>' +
         '<div class="kop-rule thick"></div>' +
         '</div>';
     },
+
+    desaProfiles: desaProfiles,
+    desaDefault: desaDefault,
 
     alamatParts: function (a) {
       var s = a || '';
@@ -161,8 +235,10 @@
     },
 
     buildSheet: function (jenis, p, s, tanggal, no, tanaman, ids) {
+      var dAktif = jenis === 'beda_nama' ? desaAktif(suratLembagaId()) : null;
+      var dp = (dAktif && dAktif.profil) || {};
       var kop = jenis === 'koperasi' ? AppSurat.kopHTML(s)
-        : jenis === 'beda_nama' ? AppSurat.kopDesaHTML(s) : '';
+        : jenis === 'beda_nama' ? AppSurat.kopDesaHTML(s, dp) : '';
       var tgl = fmtTanggal(tanggal);
       var parts = AppSurat.alamatParts(s.alamat);
       var namaAtas = p ? (p.nama || '').toUpperCase() : '';
@@ -336,9 +412,10 @@
           return Number(r.lembaga_id) === Number(lid2);
         }).filter(function (r) {
           return !ids || ids.indexOf(String(r.id)) > -1;
-        }).sort(function (x, y) {
-          return String(x.nik).localeCompare(String(y.nik));
-        });
+        }).filter(function (r) {
+          if (!dAktif || dAktif.mode !== 'satu' || !dp.nama_desa) return true;
+          return normDesa(r.desa) === normDesa(dp.nama_desa);
+        }).sort(sortNama);
         var dRows = daftar.length
           ? daftar.map(function (r, i) {
               return '<tr>' +
@@ -354,9 +431,18 @@
                 '</tr>';
             }).join('')
           : '<tr><td class="l-no">-</td><td colspan="8">Tidak ada data pekebun.</td></tr>';
-        var dParts = AppSurat.alamatParts(s.desa_alamat || s.alamat);
-        var dLok = [dParts.desaName, dParts.kecName, dParts.kabName].filter(function (x) { return x; });
-        if (!dLok.length && s.nama_desa) dLok.push('Desa ' + esc(s.nama_desa));
+        var dKec = String(dp.kecamatan || '').replace(/^Kecamatan\s+/i, '').trim();
+        var dKab = String(dp.kabupaten || '').replace(/^(Kabupaten|Kota)\s+/i, '').trim();
+        var dDes = String(dp.nama_desa || '').replace(/^Desa\s+/i, '').trim();
+        var dLok = [];
+        if (dDes) dLok.push('Desa ' + dDes);
+        if (dKec) dLok.push('Kecamatan ' + dKec);
+        if (dKab) dLok.push('Kabupaten ' + dKab);
+        if (!dLok.length) {
+          var dParts = AppSurat.alamatParts(s.desa_alamat || s.alamat);
+          dLok = [dParts.desaName, dParts.kecName, dParts.kabName].filter(function (x) { return x; });
+          if (!dLok.length && s.nama_desa) dLok.push('Desa ' + esc(s.nama_desa));
+        }
         var dLokTxt = dLok.length ? dLok.join(' ') : 'Desa …………., Kecamatan ……...., Kabupaten …….';
         var tanamanTxt = (tanaman || 'kelapa sawit').toLowerCase();
         var pernyataanTxt = 'adalah benar memiliki/menguasai tanah/lahan kebun ' + esc(tanamanTxt) + ' di ' + dLokTxt + ' dengan sertipikat hak milik (SHM) sebagai tersebut diatas dan belum dilakukan perubahan nama kepemilikan tanah/lahan.';
@@ -365,10 +451,10 @@
           '<div class="l-nomor">' + esc(no) + '</div>' +
           '<p class="no-indent gap3">Yang bertanda tangan di bawah ini:</p>' +
           '<table class="l-table">' +
-          '<tr><td class="l-w">Nama</td><td class="l-c">:</td><td>' + esc(s.kepala_desa) + '</td></tr>' +
-          '<tr><td class="l-w">Jabatan</td><td class="l-c">:</td><td>Kepala Desa ' + esc(s.nama_desa) + '</td></tr>' +
-          '<tr><td class="l-w">Alamat</td><td class="l-c">:</td><td>' + esc(s.desa_alamat || s.alamat) + '</td></tr>' +
-          '<tr><td class="l-w">No HP</td><td class="l-c">:</td><td>' + esc(s.kepala_desa_hp || '') + '</td></tr>' +
+          '<tr><td class="l-w">Nama</td><td class="l-c">:</td><td>' + esc(dp.kepala_desa || s.kepala_desa) + '</td></tr>' +
+          '<tr><td class="l-w">Jabatan</td><td class="l-c">:</td><td>Kepala Desa ' + esc(dp.nama_desa || s.nama_desa) + '</td></tr>' +
+          '<tr><td class="l-w">Alamat</td><td class="l-c">:</td><td>' + esc(dp.desa_alamat || s.desa_alamat || s.alamat) + '</td></tr>' +
+          '<tr><td class="l-w">No HP</td><td class="l-c">:</td><td>' + esc(dp.kepala_desa_hp || s.kepala_desa_hp || '') + '</td></tr>' +
           '</table>' +
           '<p class="no-indent">dengan ini menyatakan, bahwa nama-nama dibawah ini :</p>' +
           '<table class="l-table l-table-list l-tanah">' +
@@ -392,10 +478,10 @@
           '<p class="no-indent">' + pernyataanTxt + '</p>' +
           '<p class="no-indent">Demikian surat pernyataan ini dibuat dengan sebenar-benarnya untuk dapat digunakan sebagaimana semestinya. Apabila di kemudian hari ditemukan bahwa pernyataan ini tidak benar, saya bersedia menerima konsekuensi sesuai dengan peraturan yang berlaku.</p>' +
           '<div class="l-sign right">' +
-          '<div>' + esc(s.nama_desa || s.tempat) + ', ' + tgl + '</div>' +
-          '<div>Kepala Desa ' + esc(s.nama_desa) + '</div>' +
+          '<div>' + esc(dp.nama_desa || s.nama_desa || s.tempat) + ', ' + tgl + '</div>' +
+          '<div>Kepala Desa ' + esc(dp.nama_desa || s.nama_desa) + '</div>' +
           '<div class="l-space"></div>' +
-          '<div class="l-name">' + esc(s.kepala_desa) + '</div>' +
+          '<div class="l-name">' + esc(dp.kepala_desa || s.kepala_desa) + '</div>' +
           '</div>';
       }
 
@@ -455,7 +541,10 @@
       fitDesaTable();
     };
     if (isKolektif(selJ.value)) {
-      Api.get('surat.php', 'next_no', { jenis: selJ.value, lembaga_id: lid > 0 ? lid : 0 }).then(function (j) {
+      var qNo = { jenis: selJ.value, lembaga_id: lid > 0 ? lid : 0 };
+      var did = selJ.value === 'beda_nama' ? currentDesaId() : 0;
+      if (did > 0) qNo.desa_id = did;
+      Api.get('surat.php', 'next_no', qNo).then(function (j) {
         if (seq !== renderSeq) return;
         currentNo = j.no_surat || '';
         inpN.value = currentNo;
@@ -497,17 +586,76 @@
     var list = document.getElementById('pekebunMultiList');
     if (!list) return;
     var lid = suratLembagaId();
+    var dAktif = desaAktif(lid);
+    var dp = dAktif.profil || {};
     var rows = (AppData.get() || []).filter(function (r) {
       return Number(r.lembaga_id) === Number(lid);
-    }).sort(function (x, y) {
-      return String(x.nik).localeCompare(String(y.nik));
-    });
+    }).filter(function (r) {
+      if (dAktif.mode !== 'satu' || !dp.nama_desa) return true;
+      return normDesa(r.desa) === normDesa(dp.nama_desa);
+    }).sort(sortNama);
+    var checked = 0;
     list.innerHTML = rows.length
       ? rows.map(function (r) {
           var ck = multiSel[String(r.id)] ? ' checked' : '';
+          if (ck) checked++;
           return '<label class="multi-item"><input type="checkbox" value="' + r.id + '"' + ck + '><span>' + esc(r.nama) + '</span><small>' + esc(r.nik) + '</small></label>';
         }).join('')
-      : '<div class="multi-empty">Tidak ada pekebun untuk kelembagaan ini.</div>';
+      : '<div class="multi-empty">Tidak ada pekebun untuk filter ini.</div>';
+    var cnt = document.getElementById('multiCount');
+    if (cnt) cnt.textContent = checked ? checked + ' dipilih' : '';
+  }
+
+  /* Opsi filter desa: profil pengaturan dulu, lalu desa lain dari data. */
+  function fillDesaFilter(lid, keepVal) {
+    var sel = document.getElementById('selDesaBedaNama');
+    if (!sel) return;
+    var s = AppSettings.get(lid);
+    var profiles = desaProfiles(s);
+    var seen = {};
+    var opts = ['<option value="__SEMUA__">Semua desa</option>'];
+    profiles.forEach(function (p) {
+      var val = Number(p.id) > 0 ? 'p:' + p.id : 'n:' + normDesa(p.nama_desa);
+      if (seen[val]) return;
+      seen[val] = true;
+      opts.push('<option value="' + val + '"' + (Number(p.is_default) === 1 ? ' data-def="1"' : '') + '>' + esc(p.nama_desa) + (Number(p.is_default) === 1 ? ' (default)' : '') + '</option>');
+    });
+    (AppData.get() || []).forEach(function (r) {
+      if (Number(r.lembaga_id) !== Number(lid)) return;
+      var nm = String(r.desa || '').replace(/^Desa\s+/i, '').replace(/\s+/g, ' ').trim();
+      if (!nm) return;
+      var val = 'n:' + normDesa(nm);
+      if (seen[val]) return;
+      seen[val] = true;
+      opts.push('<option value="' + val + '">' + esc(nm) + ' (belum di Pengaturan)</option>');
+    });
+    sel.innerHTML = opts.join('');
+    var want = keepVal || '';
+    var ok = false;
+    if (want) {
+      for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === want) { ok = true; break; }
+      }
+    }
+    if (ok) {
+      sel.value = want;
+    } else {
+      var def = null;
+      for (var j = 0; j < sel.options.length; j++) {
+        if (sel.options[j].getAttribute('data-def')) { def = sel.options[j].value; break; }
+      }
+      sel.value = def || '__SEMUA__';
+    }
+  }
+
+  function currentDesaId() {
+    var sel = document.getElementById('selDesaBedaNama');
+    var v = sel ? sel.value : '';
+    if (v && v.indexOf('p:') === 0) {
+      var id = Number(v.slice(2)) || 0;
+      if (id > 0) return id;
+    }
+    return 0;
   }
 
   function multiChecked() {
@@ -551,15 +699,18 @@
 
     var fillPekebun = function () {
       var cur = selP.value;
+      var selD = document.getElementById('selDesaBedaNama');
+      var curDesa = selD ? selD.value : '';
       var list = AppData.get().filter(function (p) {
         return Number(p.lembaga_id) === Number(lid);
-      });
+      }).sort(sortNama);
       var curOk = list.some(function (p) { return String(p.id) === String(cur); });
       selP.innerHTML = '<option value="">-- Pilih Pekebun --</option>' +
         list.map(function (p) {
           return '<option value="' + p.id + '">' + esc(p.nama) + ' &mdash; ' + esc(p.nik) + '</option>';
         }).join('');
       if (curOk) selP.value = cur;
+      fillDesaFilter(lid, curDesa);
       renderMultiPekebun();
       setKoperasiMode();
     };
@@ -625,8 +776,20 @@
 
     document.getElementById('selPekebun').addEventListener('change', renderPreview);
     document.getElementById('selJenis').addEventListener('change', function () {
+      if (this.value === 'beda_nama') {
+        multiSel = {};
+        fillDesaFilter(suratLembagaId(), '');
+      }
       setKoperasiMode();
+      renderMultiPekebun();
       renderPreview();
+    });
+    var selDesa = document.getElementById('selDesaBedaNama');
+    if (selDesa) selDesa.addEventListener('change', function () {
+      multiSel = {};
+      renderMultiPekebun();
+      renderPreview();
+      AppToast('Filter desa diganti. Centangan sebelumnya direset agar surat tidak tercampur desa lain.');
     });
     var selT = document.getElementById('selTanaman');
     if (selT) selT.addEventListener('change', renderPreview);
@@ -641,9 +804,9 @@
     }
     var btnAll = document.getElementById('btnMultiAll');
     if (btnAll) btnAll.addEventListener('click', function () {
-      var lid = suratLembagaId();
-      (AppData.get() || []).forEach(function (r) {
-        if (Number(r.lembaga_id) === Number(lid)) multiSel[String(r.id)] = true;
+      [].forEach.call(document.querySelectorAll('#pekebunMultiList input[type=checkbox]'), function (x) {
+        x.checked = true;
+        multiSel[x.value] = true;
       });
       renderMultiPekebun();
       renderPreview();
@@ -667,8 +830,9 @@
       var jenis = document.getElementById('selJenis').value;
       var p = AppData.getById(document.getElementById('selPekebun').value);
       var s = AppSettings.get(suratLembagaId());
+      var dpPdf = jenis === 'beda_nama' ? ((desaAktif(suratLembagaId()).profil) || {}) : {};
       var namaFile = isKolektif(jenis)
-        ? ((jenis === 'beda_nama' || jenis === 'fisik') ? (s ? ('Pemerintah Desa ' + s.nama_desa) : '') : (s ? s.nama_lembaga : ''))
+        ? ((jenis === 'beda_nama' || jenis === 'fisik') ? (s ? ('Pemerintah Desa ' + (dpPdf.nama_desa || s.nama_desa)) : '') : (s ? s.nama_lembaga : ''))
         : (p ? p.nama : '');
       AppPrint.pdfFromEl(currentSheet, sanitizeName(JENIS[jenis].label + ' - ' + namaFile) + '.pdf');
     });
@@ -681,12 +845,15 @@
       var p = kolektif ? null : AppData.getById(selP.value);
       if (!kolektif && !p) return;
       var s = AppSettings.get(suratLembagaId());
+      var dpSave = selJ.value === 'beda_nama' ? ((desaAktif(suratLembagaId()).profil) || {}) : {};
+      var didSave = currentDesaId();
       var rec = {
         jenis: selJ.value,
         jenis_label: JENIS[selJ.value].label,
         no_surat: currentNo.replace(/^Nomor\s*:\s*/, ''),
-        nama: kolektif ? ((selJ.value === 'beda_nama' || selJ.value === 'fisik') ? ('Pemerintah Desa ' + (s ? s.nama_desa : '')) : (s ? s.nama_lembaga : '')) : p.nama,
+        nama: kolektif ? ((selJ.value === 'beda_nama' || selJ.value === 'fisik') ? ('Pemerintah Desa ' + (dpSave.nama_desa || (s ? s.nama_desa : ''))) : (s ? s.nama_lembaga : '')) : p.nama,
         pekebun_id: kolektif ? 0 : p.id,
+        desa_id: didSave > 0 ? didSave : 0,
         lembaga_id: suratLembagaId() || 0,
         tanggal: document.getElementById('inpTanggal').value,
         tanggal_label: fmtTanggal(document.getElementById('inpTanggal').value),

@@ -9,12 +9,7 @@
     sAlamat: 'alamat',
     sTempat: 'tempat',
     sKodeSurat: 'kode_surat',
-    sKodeSuratDesa: 'kode_surat_desa',
-    sTahunAnggaran: 'tahun_anggaran',
-    sKepalaDesa: 'kepala_desa',
-    sNamaDesa: 'nama_desa',
-    sKepalaDesaHp: 'kepala_desa_hp',
-    sDesaAlamat: 'desa_alamat'
+    sTahunAnggaran: 'tahun_anggaran'
   };
 
   var current = 0;
@@ -37,17 +32,6 @@
     }
   }
 
-  function renderLogoDesa(s) {
-    var el = document.getElementById('logoDesaPreview');
-    if (!el) return;
-    s = s || AppSettings.get(currentLembagaId());
-    if (s.logo_desa) {
-      el.innerHTML = '<img src="' + s.logo_desa + '" alt="Logo Desa">';
-    } else {
-      el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
-    }
-  }
-
   function currentLembagaId() {
     var u = AppAuth.user();
     if (u && u.role === 'admin') {
@@ -63,18 +47,141 @@
     }
   }
 
+  /* ============ Daftar Desa (profil lengkap per desa) ============ */
+  var desaRows = [];
+
+  function blankDesa() {
+    return { id: 0, nama_desa: '', kecamatan: '', kabupaten: '', kepala_desa: '',
+      kepala_desa_hp: '', desa_alamat: '', kode_surat_desa: '', logo_desa: '', is_default: 0 };
+  }
+
+  function desaFromSettings(s) {
+    s = s || {};
+    var list = Array.isArray(s.desa_daftar) && s.desa_daftar.length ? s.desa_daftar : null;
+    if (!list && (s.nama_desa || s.kepala_desa || s.desa_alamat || s.kode_surat_desa)) {
+      list = [{
+        id: 0, nama_desa: s.nama_desa || '', kecamatan: '', kabupaten: '',
+        kepala_desa: s.kepala_desa || '', kepala_desa_hp: s.kepala_desa_hp || '',
+        desa_alamat: s.desa_alamat || '', kode_surat_desa: s.kode_surat_desa || '',
+        logo_desa: s.logo_desa || '', is_default: 1
+      }];
+    }
+    desaRows = (list && list.length ? list : [blankDesa()]).map(function (d) {
+      var o = blankDesa();
+      for (var k in o) if (d && d[k] !== undefined && d[k] !== null) o[k] = d[k];
+      o.id = Number(o.id) || 0;
+      o.is_default = Number(o.is_default) === 1 ? 1 : 0;
+      return o;
+    });
+    if (!desaRows.some(function (d) { return d.is_default === 1; })) desaRows[0].is_default = 1;
+  }
+
+  function desaRowHTML(d, i) {
+    var logo = d.logo_desa
+      ? '<img class="desa-logo-mini" src="' + d.logo_desa + '" alt="Logo desa">'
+      : '<span class="desa-logo-mini desa-logo-none">Belum ada logo</span>';
+    return '<div class="desa-item" data-i="' + i + '">' +
+      '<div class="desa-item-head">' +
+      '<strong>Desa ' + (i + 1) + '</strong>' +
+      '<label class="desa-def"><input type="radio" name="desaDefault" value="' + i + '"' + (d.is_default === 1 ? ' checked' : '') + '> Jadikan default</label>' +
+      '<button type="button" class="btn btn-xs btn-danger desa-hapus" data-i="' + i + '">Hapus</button>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>Nama Desa *</label><input type="text" data-f="nama_desa" value="' + esc(d.nama_desa) + '" placeholder="cth: Tegal Sari"></div>' +
+      '<div class="form-group"><label>Nama Kepala Desa *</label><input type="text" data-f="kepala_desa" value="' + esc(d.kepala_desa) + '" placeholder="cth: SISWOYO"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>Kecamatan *</label><input type="text" data-f="kecamatan" value="' + esc(d.kecamatan) + '" placeholder="cth: Megang Sakti"></div>' +
+      '<div class="form-group"><label>Kabupaten/Kota *</label><input type="text" data-f="kabupaten" value="' + esc(d.kabupaten) + '" placeholder="cth: Musi Rawas"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>No. HP Kepala Desa</label><input type="tel" data-f="kepala_desa_hp" value="' + esc(d.kepala_desa_hp) + '" placeholder="cth: 081234567890"></div>' +
+      '<div class="form-group"><label>Kode Nomor Surat (Desa)</label><input type="text" data-f="kode_surat_desa" value="' + esc(d.kode_surat_desa) + '" placeholder="cth: PD-TS/MURA"></div>' +
+      '</div>' +
+      '<div class="form-group"><label>Alamat Desa</label><textarea rows="2" data-f="desa_alamat">' + esc(d.desa_alamat) + '</textarea></div>' +
+      '<div class="desa-logo-row">' + logo +
+      '<div class="form-actions">' +
+      '<button type="button" class="btn btn-xs btn-outline desa-logo-up" data-i="' + i + '">Upload Logo</button>' +
+      '<button type="button" class="btn btn-xs btn-danger desa-logo-del" data-i="' + i + '">Hapus Logo</button>' +
+      '</div>' +
+      '<input type="file" class="desa-logo-file" data-i="' + i + '" accept="image/*" hidden>' +
+      '</div>' +
+      '</div>';
+  }
+
+  function renderDesaList() {
+    var wrap = document.getElementById('desaList');
+    if (!wrap) return;
+    wrap.innerHTML = desaRows.map(function (d, i) { return desaRowHTML(d, i); }).join('');
+  }
+
+  function collectDesaList() {
+    var wrap = document.getElementById('desaList');
+    if (!wrap) throw new Error('Form daftar desa tidak ditemukan.');
+    var items = wrap.querySelectorAll('.desa-item');
+    if (!items.length) throw new Error('Minimal satu profil desa wajib diisi.');
+    var out = [];
+    var seen = {};
+    [].forEach.call(items, function (row) {
+      var g = function (f) {
+        var el = row.querySelector('[data-f="' + f + '"]');
+        return el ? el.value.trim().replace(/\s+/g, ' ') : '';
+      };
+      var nama = g('nama_desa').replace(/^Desa\s+/i, '');
+      var o = {
+        id: Number(desaRows[Number(row.getAttribute('data-i'))].id) || 0,
+        nama_desa: nama,
+        kecamatan: g('kecamatan').replace(/^Kecamatan\s+/i, ''),
+        kabupaten: g('kabupaten').replace(/^(Kabupaten|Kota)\s+/i, ''),
+        kepala_desa: g('kepala_desa'),
+        kepala_desa_hp: g('kepala_desa_hp'),
+        desa_alamat: (row.querySelector('[data-f="desa_alamat"]') || {}).value || '',
+        kode_surat_desa: g('kode_surat_desa'),
+        is_default: 0
+      };
+      o.desa_alamat = String(o.desa_alamat).trim();
+      if (!o.nama_desa && !o.kecamatan && !o.kabupaten && !o.kepala_desa && !o.kepala_desa_hp && !o.desa_alamat && !o.kode_surat_desa) return;
+      if (!o.nama_desa || !o.kecamatan || !o.kabupaten || !o.kepala_desa) {
+        throw new Error('Profil desa "' + (o.nama_desa || '(tanpa nama)') + '" belum lengkap. Nama desa, kecamatan, kabupaten, dan kepala desa wajib diisi.');
+      }
+      var key = o.nama_desa.toLowerCase();
+      if (seen[key]) throw new Error('Nama desa "' + o.nama_desa + '" ganda dalam daftar.');
+      seen[key] = true;
+      out.push(o);
+    });
+    if (!out.length) throw new Error('Minimal satu profil desa wajib diisi.');
+    var defIdx = -1;
+    var checked = wrap.querySelector('input[name="desaDefault"]:checked');
+    if (checked) defIdx = Number(checked.value) || 0;
+    if (defIdx < 0 || defIdx >= out.length) defIdx = 0;
+    out.forEach(function (o, i) { o.is_default = (i === defIdx) ? 1 : 0; });
+    return out;
+  }
+
+  function renderKopDesa(s) {
+    var el = document.getElementById('kopDesaPreview');
+    if (!el || !window.AppSurat) return;
+    var profiles = AppSurat.desaProfiles(s);
+    var profil = AppSurat.desaDefault(profiles);
+    el.innerHTML = AppSurat.kopDesaHTML(s || {}, profil || {});
+  }
+
   function setReadonly(mode) {
     readonly = !!mode;
     for (var id in FIELD_MAP) {
       var el = document.getElementById(id);
       if (el) el.disabled = readonly;
     }
+    var dl = document.getElementById('desaList');
+    if (dl) {
+      [].forEach.call(dl.querySelectorAll('input, textarea, select, button'), function (x) { x.disabled = readonly; });
+    }
+    var tb = document.getElementById('btnTambahDesa');
+    if (tb) tb.hidden = readonly;
     var btn = document.getElementById('btnSimpanPengaturan');
     if (btn) btn.hidden = readonly;
     var la = document.getElementById('logoActions');
     if (la) la.hidden = readonly;
-    var ld = document.getElementById('logoDesaActions');
-    if (ld) ld.hidden = readonly;
     var rb = document.getElementById('roBanner');
     if (rb) rb.hidden = !readonly;
   }
@@ -176,9 +283,11 @@
     renderDetailHeader(lembagaRow(lid));
     AppSettings.load(lid).then(function (s) {
       fillForm(s);
+      desaFromSettings(s);
+      renderDesaList();
       renderLogo(s);
-      renderLogoDesa(s);
       renderKop(s);
+      renderKopDesa(s);
       renderBatasCard(s);
     }).catch(function (e) {
       AppToast(e.message, 'error');
@@ -277,15 +386,91 @@
         var el = document.getElementById(id);
         if (el) s[FIELD_MAP[id]] = el.value.trim();
       }
+      try {
+        s.desa_daftar = collectDesaList();
+      } catch (err) {
+        AppToast(err.message, 'error');
+        return;
+      }
       if (!s.nama_lembaga) { AppToast('Nama kelembagaan wajib diisi.', 'error'); return; }
       AppSettings.save(s, lid).then(function () {
         renderKop(s);
+        renderKopDesa(s);
         AppToast('Pengaturan kelembagaan berhasil disimpan.');
         refresh(lid);
       }).catch(function (err) {
         AppToast(err.message, 'error');
       });
     });
+
+    var btnTambahDesa = document.getElementById('btnTambahDesa');
+    if (btnTambahDesa) btnTambahDesa.addEventListener('click', function () {
+      desaRows.push(blankDesa());
+      renderDesaList();
+    });
+
+    var desaWrap = document.getElementById('desaList');
+    if (desaWrap) {
+      desaWrap.addEventListener('click', function (e) {
+        var hapus = e.target.closest('.desa-hapus');
+        if (hapus) {
+          if (desaRows.length <= 1) { AppToast('Minimal satu profil desa harus ada.', 'warn'); return; }
+          var idx = Number(hapus.getAttribute('data-i')) || 0;
+          AppConfirm('Hapus profil desa ini? Perubahan tersimpan saat Anda klik Simpan Pengaturan.', function () {
+            desaRows.splice(idx, 1);
+            if (!desaRows.some(function (d) { return d.is_default === 1; })) desaRows[0].is_default = 1;
+            renderDesaList();
+          });
+          return;
+        }
+        var up = e.target.closest('.desa-logo-up');
+        if (up) {
+          var i = Number(up.getAttribute('data-i')) || 0;
+          if (!Number(desaRows[i].id)) {
+            AppToast('Simpan pengaturan dulu sebelum upload logo desa ini.', 'warn');
+            return;
+          }
+          var fi = desaWrap.querySelector('.desa-logo-file[data-i="' + i + '"]');
+          if (fi) fi.click();
+          return;
+        }
+        var del = e.target.closest('.desa-logo-del');
+        if (del) {
+          var j = Number(del.getAttribute('data-i')) || 0;
+          var row = desaRows[j];
+          if (!row || !Number(row.id)) { AppToast('Simpan pengaturan dulu sebelum mengelola logo.', 'warn'); return; }
+          var lidDel = currentLembagaId();
+          if (!lidDel) { AppToast('Pilih kelembagaan terlebih dahulu.', 'error'); return; }
+          AppConfirm('Yakin ingin menghapus logo desa ini?', function () {
+            AppSettings.saveLogo('', lidDel, 'desa', row.id).then(function () {
+              AppToast('Logo desa dihapus.');
+              refresh(lidDel);
+            }).catch(function (err) { AppToast(err.message, 'error'); });
+          });
+        }
+      });
+      desaWrap.addEventListener('change', function (e) {
+        var fi = e.target.closest ? e.target.closest('.desa-logo-file') : null;
+        if (!fi) return;
+        var i = Number(fi.getAttribute('data-i')) || 0;
+        var row = desaRows[i];
+        var f = fi.files && fi.files[0];
+        fi.value = '';
+        if (!f || !row || !Number(row.id)) return;
+        if (!/^image\//.test(f.type)) { AppToast('File harus berupa gambar.', 'error'); return; }
+        if (f.size > 2 * 1024 * 1024) { AppToast('Ukuran gambar maksimal 2 MB.', 'error'); return; }
+        var lidUp = currentLembagaId();
+        if (!lidUp) { AppToast('Pilih kelembagaan terlebih dahulu.', 'error'); return; }
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          AppSettings.saveLogo(ev.target.result, lidUp, 'desa', row.id).then(function () {
+            AppToast('Logo desa berhasil diunggah.');
+            refresh(lidUp);
+          }).catch(function (err) { AppToast(err.message, 'error'); });
+        };
+        reader.readAsDataURL(f);
+      });
+    }
 
     document.getElementById('btnUploadLogo').addEventListener('click', function () {
       document.getElementById('fileLogo').click();
@@ -327,48 +512,6 @@
         });
       });
     });
-
-    var btnUpDesa = document.getElementById('btnUploadLogoDesa');
-    var fileDesa = document.getElementById('fileLogoDesa');
-    if (btnUpDesa && fileDesa) {
-      btnUpDesa.addEventListener('click', function () { fileDesa.click(); });
-      fileDesa.addEventListener('change', function () {
-        var f = this.files[0];
-        this.value = '';
-        var lid = currentLembagaId();
-        if (!lid) { AppToast('Pilih kelembagaan terlebih dahulu.', 'error'); return; }
-        if (!f) return;
-        if (!/^image\//.test(f.type)) { AppToast('File harus berupa gambar.', 'error'); return; }
-        if (f.size > 2 * 1024 * 1024) { AppToast('Ukuran gambar maksimal 2 MB.', 'error'); return; }
-        var reader = new FileReader();
-        reader.onload = function (e) {
-          AppSettings.saveLogo(e.target.result, lid, 'desa').then(function () {
-            renderLogoDesa();
-            AppToast('Logo desa berhasil diunggah.');
-            refresh(lid);
-          }).catch(function (err) {
-            AppToast(err.message, 'error');
-          });
-        };
-        reader.readAsDataURL(f);
-      });
-    }
-    var btnHapusDesa = document.getElementById('btnHapusLogoDesa');
-    if (btnHapusDesa) {
-      btnHapusDesa.addEventListener('click', function () {
-        var lid = currentLembagaId();
-        if (!lid) { AppToast('Pilih kelembagaan terlebih dahulu.', 'error'); return; }
-        AppConfirm('Yakin ingin menghapus logo desa?', function () {
-          AppSettings.saveLogo('', lid, 'desa').then(function () {
-            renderLogoDesa();
-            AppToast('Logo desa dihapus.');
-            refresh(lid);
-          }).catch(function (err) {
-            AppToast(err.message, 'error');
-          });
-        });
-      });
-    }
 
     var btnSimpanBatas = document.getElementById('btnSimpanBatas');
     if (btnSimpanBatas) {

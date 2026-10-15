@@ -2182,3 +2182,14 @@ a { color: var(--green-600); text-decoration: none; }
   .batas-form input[type=datetime-local] { width: 100%; }
   #kopCard .sheet-preview { padding: 12px; }
 }
+
+/* ============ Daftar Desa (profil lengkap per desa) ============ */
+.desa-item { border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; background: #fbfdfc; }
+.desa-item-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.desa-item-head strong { font-size: 14px; }
+.desa-def { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); margin-left: auto; }
+.desa-item-head .desa-hapus { margin-left: 0; }
+.desa-logo-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.desa-logo-mini { width: 52px; height: 52px; border-radius: 10px; object-fit: contain; background: #fff; border: 1px solid var(--line); }
+.desa-logo-none { display: inline-flex; align-items: center; justify-content: center; font-size: 10.5px; color: var(--muted); padding: 0 8px; text-align: center; }
+.multi-tools select { max-width: 220px; }

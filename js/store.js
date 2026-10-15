@@ -183,6 +183,7 @@
     nama_desa: '',
     kepala_desa_hp: '',
     desa_alamat: '',
+    desa_daftar: [],
     logo: '',
     logo_desa: ''
   };
@@ -224,13 +225,21 @@
         return j;
       });
     },
-    saveLogo: function (logo, lembagaId, target) {
+    saveLogo: function (logo, lembagaId, target, desaId) {
       var kolom = target === 'desa' ? 'logo_desa' : 'logo';
       var params = {};
       if (lembagaId) params.lembaga_id = lembagaId;
-      return Api.post('settings.php', 'logo', { logo: logo || '', jenis: target === 'desa' ? 'desa' : '' }, params).then(function (j) {
+      var data = { logo: logo || '', jenis: target === 'desa' ? 'desa' : '' };
+      if (target === 'desa' && Number(desaId) > 0) data.desa_id = Number(desaId);
+      return Api.post('settings.php', 'logo', data, params).then(function (j) {
         var s = AppSettings.get(lembagaId);
-        s[kolom] = logo || '';
+        if (target === 'desa' && Number(desaId) > 0 && s.desa_daftar) {
+          s.desa_daftar.forEach(function (d) {
+            if (Number(d.id) === Number(desaId)) d.logo_desa = logo || '';
+          });
+        } else {
+          s[kolom] = logo || '';
+        }
         settingsCache[lembagaId || 0] = s;
         settingsLoaded[lembagaId || 0] = true;
         return j;

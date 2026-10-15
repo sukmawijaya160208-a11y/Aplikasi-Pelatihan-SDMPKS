@@ -49,6 +49,13 @@
     return v;
   };
 
+  /* Urutan abjad Indonesia: nama A-Z, lalu id sebagai penyeimbang. */
+  window.sortByNama = function (a, b) {
+    var r = String(a && a.nama || '').localeCompare(String(b && b.nama || ''), 'id', { sensitivity: 'base', numeric: true });
+    if (r !== 0) return r;
+    return (Number(a && a.id) || 0) - (Number(b && b.id) || 0);
+  };
+
   /* ============ Pencetakan & PDF ============ */
   function pdfPageSize(el) {
     if (el.classList && el.classList.contains('landscape')) {
@@ -356,7 +363,7 @@
       if (state.filterLembagaId && String(p.lembaga_id) !== String(state.filterLembagaId)) return false;
       if (!q) return true;
       return (p.nama || '').toLowerCase().indexOf(q) > -1 || (p.nik || '').indexOf(q) > -1;
-    });
+    }).sort(window.sortByNama);
   };
 
   function fillLembagaSelects(sel, selectedId) {
