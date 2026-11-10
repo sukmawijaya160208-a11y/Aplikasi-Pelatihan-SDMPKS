@@ -248,9 +248,7 @@
         var lid = suratLembagaId();
         var anggota = (AppData.get() || []).filter(function (r) {
           return Number(r.lembaga_id) === Number(lid);
-        }).sort(function (x, y) {
-          return String(x.nik).localeCompare(String(y.nik));
-        });
+        }).sort(sortNama);
         var tbRows = anggota.length
           ? anggota.map(function (r, i) {
               return '<tr><td class="l-no">' + (i + 1) + '</td><td>' + esc(r.nama) + '</td><td>' + esc(r.nik) + '</td></tr>';
@@ -410,6 +408,8 @@
         var lid2 = suratLembagaId();
         var daftar = (AppData.get() || []).filter(function (r) {
           return Number(r.lembaga_id) === Number(lid2);
+        }).filter(function (r) {
+          return String(r.pemilik_sebelumnya || '').trim() !== '';
         }).filter(function (r) {
           return !ids || ids.indexOf(String(r.id)) > -1;
         }).filter(function (r) {
@@ -591,6 +591,8 @@
     var rows = (AppData.get() || []).filter(function (r) {
       return Number(r.lembaga_id) === Number(lid);
     }).filter(function (r) {
+      return String(r.pemilik_sebelumnya || '').trim() !== '';
+    }).filter(function (r) {
       if (dAktif.mode !== 'satu' || !dp.nama_desa) return true;
       return normDesa(r.desa) === normDesa(dp.nama_desa);
     }).sort(sortNama);
@@ -601,7 +603,7 @@
           if (ck) checked++;
           return '<label class="multi-item"><input type="checkbox" value="' + r.id + '"' + ck + '><span>' + esc(r.nama) + '</span><small>' + esc(r.nik) + '</small></label>';
         }).join('')
-      : '<div class="multi-empty">Tidak ada pekebun untuk filter ini.</div>';
+      : '<div class="multi-empty">Tidak ada pekebun dengan data Pemilik Sebelumnya untuk filter ini.</div>';
     var cnt = document.getElementById('multiCount');
     if (cnt) cnt.textContent = checked ? checked + ' dipilih' : '';
   }

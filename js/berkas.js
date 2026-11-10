@@ -406,7 +406,10 @@
       renderBatasBanner();
     }
     Api.get('berkas.php', 'list').then(function (j) {
-      pengajuanRows = j.rows || [];
+      var byNama = window.sortByNama || function (a, b) {
+        return String(a.nama || '').localeCompare(String(b.nama || ''), 'id', { sensitivity: 'base' });
+      };
+      pengajuanRows = (j.rows || []).slice().sort(byNama);
       var selPj = document.getElementById('filterPengajuanPelatihan');
       if (selPj) {
         var optsPj = '<option value="">Semua Jenis Pelatihan</option>';
