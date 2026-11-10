@@ -817,11 +817,11 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
               </span>
               <div>
-                <h3>Backup Database</h3>
-                <p class="card-sub">Salin seluruh database: data pekebun, kelembagaan, akun, surat, notifikasi, dan pengaturan</p>
+                <h3>Backup Database + Dokumen</h3>
+                <p class="card-sub">Salin seluruh database (data pekebun, kelembagaan, akun, surat, notifikasi, pengaturan) beserta dokumen PDF</p>
               </div>
             </div>
-            <p class="muted">Backup disimpan sebagai file <strong>.sql</strong> di server dan dapat diunduh kapan saja. Riwayat 30 backup terbaru otomatis disimpan.</p>
+            <p class="muted">Backup disimpan sebagai file <strong>.zip</strong> berisi database <strong>.sql</strong> + seluruh dokumen PDF di server dan dapat diunduh kapan saja. Riwayat 30 backup terbaru otomatis disimpan.</p>
             <div class="toolbar" style="margin-top:14px">
               <button type="button" class="btn btn-primary" id="btnBkCreate">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -836,15 +836,15 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9"/><polyline points="3 12 6 12 9 12"/><path d="M13 8l5 4-5 4"/></svg>
               </span>
               <div>
-                <h3>Pulihkan Database</h3>
-                <p class="card-sub">Pulihkan database dari file backup .sql</p>
+                <h3>Pulihkan Database + Dokumen</h3>
+                <p class="card-sub">Pulihkan database dan dokumen dari file backup .zip atau .sql</p>
               </div>
             </div>
-            <p class="muted bk-danger-note"><strong>Perhatian:</strong> pemulihan akan <strong>menimpa seluruh data saat ini</strong> dengan isi file backup dan tidak dapat dibatalkan.</p>
-            <input type="file" id="bkFileRestore" accept=".sql" hidden>
+            <p class="muted bk-danger-note"><strong>Perhatian:</strong> pemulihan akan <strong>menimpa seluruh data saat ini</strong> dengan isi file backup. Folder dokumen lama akan disimpan sebagai <strong>pekebun_old_...</strong> dan tindakan ini tidak dapat dibatalkan.</p>
+            <input type="file" id="bkFileRestore" accept=".zip,.sql" hidden>
             <div class="toolbar" style="margin-top:14px">
-              <button type="button" class="btn btn-outline" id="btnBkChoose">Pilih File Backup (.sql)</button>
-              <button type="button" class="btn btn-danger" id="btnBkRestore" disabled>Pulihkan Database</button>
+              <button type="button" class="btn btn-outline" id="btnBkChoose">Pilih File Backup (.zip / .sql)</button>
+              <button type="button" class="btn btn-danger" id="btnBkRestore" disabled>Pulihkan Database + Dokumen</button>
             </div>
             <p class="muted" id="bkRestoreFile" style="margin-top:8px"></p>
           </div>
@@ -892,11 +892,11 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               </span>
               <div>
-                <h3>Backup Data Kelembagaan</h3>
-                <p class="card-sub">Cadangkan seluruh data milik kelembagaan Anda</p>
+                <h3>Backup Data + Dokumen</h3>
+                <p class="card-sub">Cadangkan seluruh data dan dokumen milik kelembagaan Anda</p>
               </div>
             </div>
-            <p class="muted">Backup berisi data pekebun, arsip surat, dan nomor surat (counter) milik kelembagaan Anda. Disimpan sebagai file <strong>.json</strong> dan diunduh otomatis ke perangkat Anda.</p>
+            <p class="muted">Backup berisi data pekebun, arsip surat, nomor surat (counter), dan dokumen PDF milik kelembagaan Anda. Disimpan sebagai file <strong>.zip</strong> dan diunduh otomatis ke perangkat Anda.</p>
             <div class="toolbar" style="margin-top:14px">
               <button type="button" class="btn btn-primary" id="btnBkLeCreate">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -911,15 +911,15 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9"/><polyline points="3 12 6 12 9 12"/><path d="M13 8l5 4-5 4"/></svg>
               </span>
               <div>
-                <h3>Pulihkan Data Kelembagaan</h3>
-                <p class="card-sub">Pulihkan data dari file backup kelembagaan Anda</p>
+                <h3>Pulihkan Data + Dokumen</h3>
+                <p class="card-sub">Pulihkan data dan dokumen dari file backup kelembagaan Anda</p>
               </div>
             </div>
-            <p class="muted">Data pekebun yang sama akan <strong>diperbarui</strong>, data baru <strong>ditambahkan</strong>. Data lain (di luar file backup) tidak dihapus.</p>
-            <input type="file" id="bkFileLe" accept=".json" hidden>
+            <p class="muted">Data pekebun yang sama akan <strong>diperbarui</strong>, data baru <strong>ditambahkan</strong>, dan dokumen PDF dari backup akan disalin. Data lain (di luar file backup) tidak dihapus.</p>
+            <input type="file" id="bkFileLe" accept=".zip,.json" hidden>
             <div class="toolbar" style="margin-top:14px">
-              <button type="button" class="btn btn-outline" id="btnBkLeChoose">Pilih File Backup (.json)</button>
-              <button type="button" class="btn btn-danger" id="btnBkLeRestore" disabled>Pulihkan Data</button>
+              <button type="button" class="btn btn-outline" id="btnBkLeChoose">Pilih File Backup (.zip / .json)</button>
+              <button type="button" class="btn btn-danger" id="btnBkLeRestore" disabled>Pulihkan Data + Dokumen</button>
             </div>
             <p class="muted" id="bkLeFile" style="margin-top:8px"></p>
           </div>
@@ -1697,7 +1697,7 @@
 <script src="js/surat.js?v=70"></script>
 <script src="js/cetak.js?v=28"></script>
 <script src="js/pengaturan.js?v=37"></script>
-<script src="js/backup.js?v=2"></script>
+<script src="js/backup.js?v=3"></script>
 <script src="js/chart.js?v=27"></script>
 <script src="js/notifikasi.js?v=26"></script>
 </body>

@@ -6,13 +6,17 @@
 # Salin api/config.example.php -> api/config.php lalu isi sesuai lingkungan
 api/config.php
 
-# Backup database hasil fitur Backup & Restore (berisi data produksi)
+# Backup database + dokumen hasil fitur Backup & Restore (berisi data produksi)
 backups/*.sql
+backups/*.zip
 !backups/.htaccess
 
 # Dokumen unggahan pengguna (PDF berkas pekebun)
 uploads/pekebun/
 !uploads/pekebun/.htaccess
+
+# Folder dokumen cadangan hasil restore backup (dihasilkan runtime, bukan bagian repo)
+uploads/pekebun_old_*/
 
 # Sampah OS / editor
 Thumbs.db

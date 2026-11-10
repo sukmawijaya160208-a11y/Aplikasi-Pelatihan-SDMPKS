@@ -26,15 +26,20 @@
   function refreshAdmin() {
     Api.get('backup.php', 'list').then(function (j) {
       var rows = j.rows || [];
-      el('bkCount').textContent = rows.length + ' file';
+      var total = rows.reduce(function (s, r) { return s + (Number(r.ukuran) || 0); }, 0);
+      el('bkCount').textContent = rows.length + ' file' + (rows.length ? ' · ' + fmtSize(total) : '');
       var tb = el('bkBody');
       if (!rows.length) {
         tb.innerHTML = '<tr class="empty-row"><td colspan="4">Belum ada backup. Klik &ldquo;Buat Backup Sekarang&rdquo; untuk membuat backup pertama.</td></tr>';
         return;
       }
       tb.innerHTML = rows.map(function (r) {
+        var isZip = r.format === 'zip';
+        var info = isZip
+          ? '<span class="badge">Database + Dokumen</span>' + (r.dokumen != null ? ' <span class="muted">' + r.dokumen + ' PDF</span>' : '')
+          : '<span class="badge">Database</span>';
         return '<tr>' +
-          '<td><strong>' + esc(r.nama) + '</strong></td>' +
+          '<td><strong>' + esc(r.nama) + '</strong><br>' + info + '</td>' +
           '<td>' + fmtSize(r.ukuran) + '</td>' +
           '<td>' + esc(r.dibuat) + '</td>' +
           '<td class="ta-right">' +
@@ -57,6 +62,30 @@
     a.remove();
   }
 
+  function downloadLeBackup() {
+    return fetch('api/backup.php?act=le_download', { credentials: 'same-origin' }).then(function (res) {
+      var ct = res.headers.get('Content-Type') || '';
+      if (!res.ok || ct.indexOf('application/json') !== -1) {
+        return res.json().then(function (j) {
+          throw new Error(j.message || 'Gagal membuat backup.');
+        });
+      }
+      var cd = res.headers.get('Content-Disposition') || '';
+      var m = /filename="([^"]+)"/.exec(cd);
+      var name = m ? m[1] : 'backup_lembaga.zip';
+      return res.blob().then(function (blob) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 3000);
+        return name;
+      });
+    });
+  }
+
   function showLeReport(j) {
     var imp = j.diimpor || {};
     var lew = j.dilewati || {};
@@ -65,8 +94,9 @@
     el('bkLeReportBody').innerHTML =
       '<div class="warn-row"><span>Pekebun diimpor</span><strong>' + (imp.pekebun || 0) + '</strong></div>' +
       '<div class="warn-row"><span>Surat diimpor</span><strong>' + (imp.surat || 0) + '</strong></div>' +
+      '<div class="warn-row"><span>Dokumen diimpor</span><strong>' + (imp.dokumen || 0) + '</strong></div>' +
       '<div class="warn-row"><span>Counter nomor surat</span><strong>' + (imp.counters || 0) + '</strong></div>' +
-      '<div class="warn-row"><span>Dilewati (duplikat / milik lembaga lain)</span><strong>' + ((lew.pekebun || 0) + (lew.surat || 0)) + '</strong></div>';
+      '<div class="warn-row"><span>Dilewati (duplikat / milik lembaga lain)</span><strong>' + ((lew.pekebun || 0) + (lew.surat || 0) + (lew.dokumen || 0)) + '</strong></div>';
     el('bkLeReportCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
@@ -85,7 +115,7 @@
     if (btnCreate) btnCreate.addEventListener('click', function () {
       btnLoading(btnCreate, true);
       Api.post('backup.php', 'create', {}).then(function (j) {
-        AppToast('Backup berhasil dibuat: ' + (j.nama || ''), 'success');
+        AppToast('Backup database + dokumen berhasil dibuat: ' + (j.nama || ''), 'success');
         refreshAdmin();
       }).catch(function (e) {
         AppToast(e.message, 'error');
@@ -97,6 +127,10 @@
     var fileRestore = el('bkFileRestore');
     if (fileRestore) fileRestore.addEventListener('change', function () {
       pickFile = fileRestore.files[0] || null;
+      if (pickFile && !/\.(zip|sql)$/i.test(pickFile.name)) {
+        AppToast('Pilih file backup .zip atau .sql.', 'error');
+        pickFile = null;
+      }
       el('bkRestoreFile').textContent = pickFile ? 'File dipilih: ' + pickFile.name + ' (' + fmtSize(pickFile.size) + ')' : '';
       el('btnBkRestore').disabled = !pickFile;
     });
@@ -104,7 +138,7 @@
     var btnRestore = el('btnBkRestore');
     if (btnRestore) btnRestore.addEventListener('click', function () {
       if (!pickFile) return;
-      AppConfirm('Pulihkan database dari file "' + pickFile.name + '"? Seluruh data saat ini akan ditimpa dengan isi file backup dan tidak dapat dibatalkan.', function () {
+      AppConfirm('Pulihkan database dan dokumen dari file "' + pickFile.name + '"? Seluruh data saat ini akan ditimpa. Folder dokumen lama akan disimpan sebagai pekebun_old_... dan tindakan ini tidak dapat dibatalkan.', function () {
         btnLoading(btnRestore, true);
         Api.upload('backup.php', 'restore', { file: pickFile }).then(function (j) {
           AppToast(j.message || 'Database berhasil dipulihkan.', 'success');
@@ -131,7 +165,7 @@
           }).catch(function (e) { AppToast(e.message, 'error'); });
         });
       } else if (act === 'pulihkan') {
-        AppConfirm('Pulihkan database dari backup "' + name + '"? Seluruh data saat ini akan ditimpa dan tidak dapat dibatalkan.', function () {
+        AppConfirm('Pulihkan database dan dokumen dari backup "' + name + '"? Seluruh data saat ini akan ditimpa. Folder dokumen lama akan disimpan sebagai pekebun_old_... dan tindakan ini tidak dapat dibatalkan.', function () {
           btnLoading(btn, true);
           Api.post('backup.php', 'restore', { file: name }).then(function (j) {
             AppToast(j.message || 'Database berhasil dipulihkan.', 'success');
@@ -147,19 +181,8 @@
     var btnLeCreate = el('btnBkLeCreate');
     if (btnLeCreate) btnLeCreate.addEventListener('click', function () {
       btnLoading(btnLeCreate, true);
-      Api.get('backup.php', 'le_create').then(function (j) {
-        var d = j.data;
-        var stamp = String(d.dibuat || '').replace(/[^0-9]/g, '');
-        var slug = String(d.nama_lembaga || 'lembaga').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-        var blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json;charset=utf-8' });
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'backup_' + slug + '_' + (stamp || Date.now()) + '.json';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(function () { URL.revokeObjectURL(a.href); }, 3000);
-        AppToast('Backup ' + (d.jumlah ? d.jumlah.pekebun + ' pekebun, ' + d.jumlah.surat + ' surat' : '') + ' diunduh.', 'success');
+      downloadLeBackup().then(function (name) {
+        AppToast('Backup ' + name + ' diunduh.', 'success');
       }).catch(function (e) {
         AppToast(e.message, 'error');
       }).finally(function () { btnLoading(btnLeCreate, false); });
@@ -170,6 +193,10 @@
     var fileLe = el('bkFileLe');
     if (fileLe) fileLe.addEventListener('change', function () {
       pickLeFile = fileLe.files[0] || null;
+      if (pickLeFile && !/\.(zip|json)$/i.test(pickLeFile.name)) {
+        AppToast('Pilih file backup .zip atau .json.', 'error');
+        pickLeFile = null;
+      }
       el('bkLeFile').textContent = pickLeFile ? 'File dipilih: ' + pickLeFile.name + ' (' + fmtSize(pickLeFile.size) + ')' : '';
       el('btnBkLeRestore').disabled = !pickLeFile;
     });
@@ -177,7 +204,7 @@
     var btnLeRestore = el('btnBkLeRestore');
     if (btnLeRestore) btnLeRestore.addEventListener('click', function () {
       if (!pickLeFile) return;
-      AppConfirm('Pulihkan data kelembagaan dari file "' + pickLeFile.name + '"? Data yang sama akan diperbarui dan data baru ditambahkan.', function () {
+      AppConfirm('Pulihkan data dan dokumen kelembagaan dari file "' + pickLeFile.name + '"? Data yang sama akan diperbarui, data baru ditambahkan, dan file dokumen dari backup akan disalin.', function () {
         btnLoading(btnLeRestore, true);
         Api.upload('backup.php', 'le_restore', { file: pickLeFile }).then(function (j) {
           showLeReport(j);
